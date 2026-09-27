@@ -47,8 +47,7 @@ class ByokState {
 
 /// Gère la lecture et l'enregistrement de la clé BYOK pour l'interface.
 class ByokViewModel extends StateNotifier<ByokState> {
-  /// Le service injecté est celui qui utilise le stockage sécurisé de la
-  /// plateforme ; un faux service peut être fourni dans les tests.
+  /// Le service injecté utilise le stockage sécurisé de la plateforme.
   ByokViewModel(this._storageService) : super(const ByokState());
 
   final ByokStorageService _storageService;
@@ -82,6 +81,8 @@ class ByokViewModel extends StateNotifier<ByokState> {
     state = state.copyWith(isLoading: true, clearErrorMessage: true);
     try {
       await _storageService.saveApiKey(normalizedKey);
+      // Le succès reste sur l'écran de confirmation ; la navigation est
+      // déclenchée par le bouton de l'écran, pas par le ViewModel.
       state = state.copyWith(isLoading: false, isKeySaved: true);
     } catch (_) {
       state = state.copyWith(
