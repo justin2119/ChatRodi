@@ -4,58 +4,79 @@ import '../../data/repositories/chat_repository_impl.dart';
 import '../../domain/models/message_model.dart';
 import '../../domain/repositories/chat_repository.dart';
 
-/// État immuable affiché par l'écran de conversation.
+/// Immutable state displayed by the conversation screen.
 class ChatState {
   const ChatState({
     this.messages = const <MessageModel>[],
     this.isLoading = false,
     this.errorMessage,
     this.selectedModel = 'Gemini 3.7 Flash',
+    this.selectedAttachmentPath,
+    this.selectedAttachmentType,
   });
 
   final List<MessageModel> messages;
   final bool isLoading;
   final String? errorMessage;
   final String selectedModel;
+  final String? selectedAttachmentPath;
+  final String? selectedAttachmentType;
 
   ChatState copyWith({
     List<MessageModel>? messages,
     bool? isLoading,
     String? errorMessage,
     String? selectedModel,
+    String? selectedAttachmentPath,
+    String? selectedAttachmentType,
     bool clearError = false,
+    bool clearAttachment = false,
   }) => ChatState(
-    messages: messages ?? this.messages,
-    isLoading: isLoading ?? this.isLoading,
-    errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
-    selectedModel: selectedModel ?? this.selectedModel,
-  );
+        messages: messages ?? this.messages,
+        isLoading: isLoading ?? this.isLoading,
+        errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
+        selectedModel: selectedModel ?? this.selectedModel,
+        selectedAttachmentPath: clearAttachment ? null : (selectedAttachmentPath ?? this.selectedAttachmentPath),
+        selectedAttachmentType: clearAttachment ? null : (selectedAttachmentType ?? this.selectedAttachmentType),
+      );
 }
 
-/// Coordonne les messages et le modèle actif.
+/// Coordinates conversation messages and the active model.
 class ChatViewModel extends StateNotifier<ChatState> {
   ChatViewModel(this._repository) : super(const ChatState());
   final ChatRepository _repository;
 
   void selectModel(String modelId) => state = state.copyWith(selectedModel: modelId);
 
+  void setAttachment(String path, {String? type}) => state = state.copyWith(
+        selectedAttachmentPath: path,
+        selectedAttachmentType: type ?? 'file',
+      );
+
+  void clearAttachment() => state = state.copyWith(clearAttachment: true);
+
   void newConversation() => state = ChatState(selectedModel: state.selectedModel);
 
   Future<void> sendMessage(String content) async {
     final prompt = content.trim();
-    if (prompt.isEmpty || state.isLoading) return;
+    final attachmentPath = state.selectedAttachmentPath;
+    final attachmentType = state.selectedAttachmentType;
+    if ((prompt.isEmpty && attachmentPath == null) || state.isLoading) return;
     final now = DateTime.now();
     final userMessage = MessageModel(
       id: now.microsecondsSinceEpoch.toString(),
       content: prompt,
       role: MessageRole.user,
       timestamp: now,
+      attachmentPath: attachmentPath,
+      attachmentType: attachmentType,
     );
     final previousMessages = state.messages;
     state = state.copyWith(
       messages: <MessageModel>[...previousMessages, userMessage],
       isLoading: true,
       clearError: true,
+      clearAttachment: true,
     );
     try {
       final answer = await _repository.sendMessage(

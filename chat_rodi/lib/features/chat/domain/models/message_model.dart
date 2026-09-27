@@ -1,49 +1,36 @@
-/// Rôle attribué à chaque message dans une conversation.
+/// Role assigned to each message in a conversation.
 enum MessageRole { user, assistant, system }
 
-/// Représente un message immuable échangé au sein d'une conversation.
-///
-/// [id] identifie le message, [content] contient son texte, [role] indique
-/// son origine, [timestamp] conserve sa date de création et [mediaUrls]
-/// contient éventuellement les URL des médias associés.
+/// Immutable message exchanged in a conversation.
 class MessageModel {
-  /// Crée un message avec toutes ses propriétés.
   const MessageModel({
     required this.id,
     required this.content,
     required this.role,
     required this.timestamp,
     this.mediaUrls,
+    this.attachmentPath,
+    this.attachmentType,
   });
 
-  /// Identifiant unique du message.
   final String id;
-
-  /// Texte du message.
   final String content;
-
-  /// Auteur logique du message.
   final MessageRole role;
-
-  /// Date et heure de création du message.
   final DateTime timestamp;
-
-  /// URL des médias joints, ou `null` en l'absence de média.
   final List<String>? mediaUrls;
+  final String? attachmentPath;
+  final String? attachmentType;
 
-  /// Convertit le message en objet JSON sérialisable.
   Map<String, dynamic> toJson() => <String, dynamic>{
         'id': id,
         'content': content,
         'role': role.name,
         'timestamp': timestamp.toIso8601String(),
         'mediaUrls': mediaUrls,
+        'attachmentPath': attachmentPath,
+        'attachmentType': attachmentType,
       };
 
-  /// Reconstruit un message depuis un objet JSON.
-  ///
-  /// Une valeur manquante ou invalide pour le rôle devient `user`, et les
-  /// dates sont interprétées au format ISO 8601.
   factory MessageModel.fromJson(Map<String, dynamic> json) {
     final roleName = json['role'] as String?;
     final role = MessageRole.values.where((value) => value.name == roleName);
@@ -54,26 +41,28 @@ class MessageModel {
       role: role.isEmpty ? MessageRole.user : role.first,
       timestamp: DateTime.parse(json['timestamp'] as String),
       mediaUrls: rawMedia?.cast<String>(),
+      attachmentPath: json['attachmentPath'] as String?,
+      attachmentType: json['attachmentType'] as String?,
     );
   }
 
-  /// Crée une copie en remplaçant uniquement les propriétés fournies.
-  ///
-  /// Les paramètres nullable possèdent un indicateur dédié afin de permettre
-  /// de distinguer une omission d'une demande explicite de mise à `null`.
   MessageModel copyWith({
     String? id,
     String? content,
     MessageRole? role,
     DateTime? timestamp,
     List<String>? mediaUrls,
+    String? attachmentPath,
+    String? attachmentType,
     bool clearMediaUrls = false,
-  }) =>
-      MessageModel(
+    bool clearAttachment = false,
+  }) => MessageModel(
         id: id ?? this.id,
         content: content ?? this.content,
         role: role ?? this.role,
         timestamp: timestamp ?? this.timestamp,
         mediaUrls: clearMediaUrls ? null : (mediaUrls ?? this.mediaUrls),
+        attachmentPath: clearAttachment ? null : (attachmentPath ?? this.attachmentPath),
+        attachmentType: clearAttachment ? null : (attachmentType ?? this.attachmentType),
       );
 }
