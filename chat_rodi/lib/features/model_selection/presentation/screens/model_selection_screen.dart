@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../chat/presentation/viewmodels/chat_viewmodel.dart';
-import '../../data/datasources/model_local_data.dart';
 import '../../domain/models/ai_model.dart';
 import '../viewmodels/model_selection_viewmodel.dart';
 
