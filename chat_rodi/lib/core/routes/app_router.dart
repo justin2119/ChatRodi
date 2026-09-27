@@ -1,7 +1,7 @@
 import 'package:go_router/go_router.dart';
 
 import 'package:chat_rodi/features/auth_byok/presentation/screens/byok_screen.dart';
-import '../../features/chat/presentation/chat_screen.dart';
+import 'package:chat_rodi/features/chat/presentation/screens/chat_screen.dart';
 import '../../features/models/presentation/model_selection_screen.dart';
 
 abstract final class AppRoutes {
