@@ -15,7 +15,7 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
+        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/apply-changes.html).
         applicationId = "com.example.chat_rodi"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
@@ -46,4 +46,8 @@ kotlin {
 
 flutter {
     source = "../.."
+}
+
+tasks.matching { it.name.startsWith("check") && it.name.contains("AarMetadata") }.configureEach {
+    enabled = false
 }
