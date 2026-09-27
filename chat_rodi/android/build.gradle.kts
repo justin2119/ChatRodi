@@ -21,15 +21,9 @@ subprojects {
 
 subprojects {
     plugins.withId("com.android.library") {
-        extensions.configure<com.android.build.gradle.LibraryExtension> {
+        configure<com.android.build.gradle.LibraryExtension> {
             compileSdk = 36
         }
-    }
-}
-
-subprojects {
-    tasks.matching { it.name.contains("AarMetadata") }.configureEach {
-        enabled = false
     }
 }
 
