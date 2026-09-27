@@ -32,7 +32,7 @@ class ChatRemoteDataSource {
       <String, dynamic>{'role': 'user', 'content': prompt},
     ];
     final response = await _dio.post<Map<String, dynamic>>(
-      '/chat/completions',
+      'chat/completions',
       data: <String, dynamic>{
         'model': model ?? 'default',
         'messages': messages,
