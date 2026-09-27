@@ -1,0 +1,32 @@
+import 'package:go_router/go_router.dart';
+
+import '../../features/byok/presentation/byok_screen.dart';
+import '../../features/chat/presentation/chat_screen.dart';
+import '../../features/models/presentation/model_selection_screen.dart';
+
+abstract final class AppRoutes {
+  static const byok = '/';
+  static const chat = '/chat';
+  static const modelSelection = '/models';
+}
+
+final appRouter = GoRouter(
+  initialLocation: AppRoutes.byok,
+  routes: [
+    GoRoute(
+      path: AppRoutes.byok,
+      name: 'byok',
+      builder: (context, state) => const ByokScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.chat,
+      name: 'chat',
+      builder: (context, state) => const ChatScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.modelSelection,
+      name: 'modelSelection',
+      builder: (context, state) => const ModelSelectionScreen(),
+    ),
+  ],
+);
