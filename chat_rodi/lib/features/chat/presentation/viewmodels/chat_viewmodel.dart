@@ -10,7 +10,7 @@ class ChatState {
     this.messages = const <MessageModel>[],
     this.isLoading = false,
     this.errorMessage,
-    this.selectedModel = 'default',
+    this.selectedModel = 'Gemini 3.7 Flash',
   });
 
   final List<MessageModel> messages;
@@ -32,22 +32,18 @@ class ChatState {
   );
 }
 
-/// Coordonne l'envoi des messages et la sélection du modèle actif.
+/// Coordonne les messages et le modèle actif.
 class ChatViewModel extends StateNotifier<ChatState> {
   ChatViewModel(this._repository) : super(const ChatState());
-
   final ChatRepository _repository;
 
-  /// Modèle à utiliser pour les prochains envois.
-  void selectModel(String modelId) {
-    state = state.copyWith(selectedModel: modelId);
-  }
+  void selectModel(String modelId) => state = state.copyWith(selectedModel: modelId);
 
-  /// Ajoute le message utilisateur, puis récupère et ajoute la réponse.
+  void newConversation() => state = ChatState(selectedModel: state.selectedModel);
+
   Future<void> sendMessage(String content) async {
     final prompt = content.trim();
     if (prompt.isEmpty || state.isLoading) return;
-
     final now = DateTime.now();
     final userMessage = MessageModel(
       id: now.microsecondsSinceEpoch.toString(),
@@ -67,20 +63,13 @@ class ChatViewModel extends StateNotifier<ChatState> {
         history: previousMessages,
         model: state.selectedModel,
       );
-      state = state.copyWith(
-        messages: <MessageModel>[...state.messages, answer],
-        isLoading: false,
-      );
+      state = state.copyWith(messages: <MessageModel>[...state.messages, answer], isLoading: false);
     } catch (error) {
-      state = state.copyWith(
-        isLoading: false,
-        errorMessage: 'Impossible d’envoyer le message : $error',
-      );
+      state = state.copyWith(isLoading: false, errorMessage: 'Impossible d’envoyer le message : $error');
     }
   }
 }
 
-/// Fournisseur classique Riverpod du ViewModel de conversation.
 final chatViewModelProvider = StateNotifierProvider<ChatViewModel, ChatState>(
   (ref) => ChatViewModel(ref.watch(chatRepositoryProvider)),
 );
