@@ -5,6 +5,7 @@ import 'package:chat_rodi/features/chat/presentation/screens/chat_screen.dart';
 import 'package:chat_rodi/features/model_selection/presentation/screens/model_selection_screen.dart';
 import 'package:chat_rodi/features/generation/presentation/screens/image_generation_screen.dart';
 import 'package:chat_rodi/features/generation/presentation/screens/video_generation_screen.dart';
+import 'package:chat_rodi/features/account/presentation/screens/usage_dashboard_screen.dart';
 
 abstract final class AppRoutes {
   static const byok = '/';
@@ -12,6 +13,7 @@ abstract final class AppRoutes {
   static const modelSelection = '/models';
   static const generateImage = '/generate-image';
   static const generateVideo = '/generate-video';
+  static const usage = '/usage';
 }
 
 final appRouter = GoRouter(
@@ -22,5 +24,6 @@ final appRouter = GoRouter(
     GoRoute(path: AppRoutes.modelSelection, name: 'modelSelection', builder: (context, state) => const ModelSelectionScreen()),
     GoRoute(path: AppRoutes.generateImage, name: 'generateImage', builder: (context, state) => const ImageGenerationScreen()),
     GoRoute(path: AppRoutes.generateVideo, name: 'generateVideo', builder: (context, state) => const VideoGenerationScreen()),
+    GoRoute(path: AppRoutes.usage, name: 'usage', builder: (context, state) => const UsageDashboardScreen()),
   ],
 );
