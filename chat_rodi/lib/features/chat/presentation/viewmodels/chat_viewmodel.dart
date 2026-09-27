@@ -6,7 +6,6 @@ import '../../domain/repositories/chat_repository.dart';
 
 /// État immuable affiché par l'écran de conversation.
 class ChatState {
-  /// Crée l'état de conversation avec des valeurs initiales explicites.
   const ChatState({
     this.messages = const <MessageModel>[],
     this.isLoading = false,
@@ -14,40 +13,35 @@ class ChatState {
     this.selectedModel = 'default',
   });
 
-  /// Messages connus, dans leur ordre de présentation.
   final List<MessageModel> messages;
-
-  /// Indique qu'une réponse est attendue.
   final bool isLoading;
-
-  /// Erreur destinée à être présentée à l'utilisateur, le cas échéant.
   final String? errorMessage;
-
-  /// Identifiant du modèle sélectionné pour les prochains envois.
   final String selectedModel;
 
-  /// Produit un nouvel état en conservant les champs non modifiés.
   ChatState copyWith({
     List<MessageModel>? messages,
     bool? isLoading,
     String? errorMessage,
     String? selectedModel,
     bool clearError = false,
-  }) =>
-      ChatState(
-        messages: messages ?? this.messages,
-        isLoading: isLoading ?? this.isLoading,
-        errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
-        selectedModel: selectedModel ?? this.selectedModel,
-      );
+  }) => ChatState(
+    messages: messages ?? this.messages,
+    isLoading: isLoading ?? this.isLoading,
+    errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
+    selectedModel: selectedModel ?? this.selectedModel,
+  );
 }
 
-/// Coordonne l'envoi de messages et la mise à jour de l'état de l'interface.
+/// Coordonne l'envoi des messages et la sélection du modèle actif.
 class ChatViewModel extends StateNotifier<ChatState> {
-  /// Reçoit le dépôt métier pour permettre une substitution lors des tests.
   ChatViewModel(this._repository) : super(const ChatState());
 
   final ChatRepository _repository;
+
+  /// Modèle à utiliser pour les prochains envois.
+  void selectModel(String modelId) {
+    state = state.copyWith(selectedModel: modelId);
+  }
 
   /// Ajoute le message utilisateur, puis récupère et ajoute la réponse.
   Future<void> sendMessage(String content) async {
@@ -87,7 +81,6 @@ class ChatViewModel extends StateNotifier<ChatState> {
 }
 
 /// Fournisseur classique Riverpod du ViewModel de conversation.
-final chatViewModelProvider =
-    StateNotifierProvider<ChatViewModel, ChatState>((ref) {
-  return ChatViewModel(ref.watch(chatRepositoryProvider));
-});
+final chatViewModelProvider = StateNotifierProvider<ChatViewModel, ChatState>(
+  (ref) => ChatViewModel(ref.watch(chatRepositoryProvider)),
+);
