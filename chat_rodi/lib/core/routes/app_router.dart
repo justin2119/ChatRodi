@@ -24,7 +24,7 @@ abstract final class AppRoutes {
 }
 
 final appRouter = GoRouter(
-  initialLocation: AppRoutes.splash,
+  initialLocation: '/splash',
   routes: [
     GoRoute(path: AppRoutes.splash, name: 'splash', builder: (context, state) => const SplashScreen()),
     GoRoute(path: AppRoutes.byok, name: 'byok', builder: (context, state) => const ByokScreen()),

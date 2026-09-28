@@ -9,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../domain/models/message_model.dart';
 import '../viewmodels/chat_viewmodel.dart';
+import '../widgets/attachment_menu_bottom_sheet.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen({super.key});
@@ -84,11 +85,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       ),
       drawer: Drawer(backgroundColor: AppColors.deepSlate, child: SafeArea(child: ListView(children: [
         const ListTile(title: Text('RodiumAi', style: TextStyle(color: Colors.white))),
-        ListTile(title: const Text('Modèles'), onTap: () { Navigator.pop(context); context.go('/models'); }),
+        ListTile(title: const Text('Mod\u00e8les'), onTap: () { Navigator.pop(context); context.go('/models'); }),
       ]))),
       body: Column(children: [
         Expanded(child: state.messages.isEmpty
-            ? const Center(child: Text('Bonjour ✨\nComment puis-je vous aider aujourd’hui ?', textAlign: TextAlign.center, style: TextStyle(color: Colors.white70, fontSize: 18)))
+            ? const Center(child: Text('Bonjour \u2728\nComment puis-je vous aider aujourd’hui ?', textAlign: TextAlign.center, style: TextStyle(color: Colors.white70, fontSize: 18)))
             : ListView.builder(padding: const EdgeInsets.all(16), itemCount: state.messages.length, itemBuilder: (context, index) => _MessageBubble(message: state.messages[index]))),
         if (state.errorMessage != null) Padding(padding: const EdgeInsets.all(8), child: Text(state.errorMessage!, style: const TextStyle(color: Colors.redAccent))),
         SafeArea(top: false, child: Container(
@@ -98,7 +99,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             if (state.selectedAttachmentPath != null)
               _AttachmentPreview(path: state.selectedAttachmentPath!, type: state.selectedAttachmentType ?? 'file', onRemove: () => ref.read(chatViewModelProvider.notifier).clearAttachment()),
             Row(children: [
-              IconButton(tooltip: 'Joindre un fichier', onPressed: _showAttachmentSheet, icon: const Icon(Icons.add_rounded, color: AppColors.textPrimary)),
+              IconButton(tooltip: 'Joindre un fichier', onPressed: () => showAttachmentMenu(context), icon: const Icon(Icons.attach_file_rounded, color: AppColors.textPrimary)),
               Expanded(child: TextField(controller: _controller, minLines: 1, maxLines: 5, textInputAction: TextInputAction.send, onSubmitted: (_) => _send(), style: const TextStyle(color: AppColors.textPrimary), decoration: InputDecoration(hintText: 'Posez votre question...', filled: true, fillColor: AppColors.surface, border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: const BorderSide(color: AppColors.subtleBorder))))),
               IconButton.filled(onPressed: state.isLoading ? null : _send, style: IconButton.styleFrom(backgroundColor: AppColors.emerald, foregroundColor: AppColors.deepSlate), icon: const Icon(Icons.arrow_upward_rounded)),
             ]),
@@ -127,7 +128,7 @@ class _AttachmentPreview extends StatelessWidget {
   Widget build(BuildContext context) => Container(height: 82, width: double.infinity, margin: const EdgeInsets.only(bottom: 10), padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: AppColors.surface, border: Border.all(color: AppColors.subtleBorder), borderRadius: BorderRadius.circular(14)), child: Row(children: [
     ClipRRect(borderRadius: BorderRadius.circular(9), child: type == 'image' ? Image.file(File(path), width: 64, height: 64, fit: BoxFit.cover) : Container(width: 64, height: 64, color: const Color(0xFF0F172A), child: const Icon(Icons.description_outlined, color: AppColors.emerald))),
     const SizedBox(width: 12), Expanded(child: Text(path.split(Platform.pathSeparator).last, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(color: AppColors.textPrimary))),
-    IconButton(onPressed: onRemove, tooltip: 'Supprimer la pièce jointe', icon: const Icon(Icons.close_rounded, color: Colors.white70)),
+    IconButton(onPressed: onRemove, tooltip: 'Supprimer la pi\u00e8ce jointe', icon: const Icon(Icons.close_rounded, color: Colors.white70)),
   ]));
 }
 
