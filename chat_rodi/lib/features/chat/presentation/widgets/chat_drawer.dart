@@ -1,0 +1,58 @@
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../../core/routes/app_router.dart';
+
+/// Navigation principale vers les fonctionnalites de RodiumAi.
+class ChatDrawer extends StatelessWidget {
+  const ChatDrawer({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final currentLocation = GoRouterState.of(context).uri.path;
+    return Drawer(
+      backgroundColor: const Color(0xFF1A1A1A),
+      child: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Padding(
+              padding: EdgeInsets.fromLTRB(20, 24, 20, 20),
+              child: Text('RodiumAi', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+            ),
+            const Divider(height: 1),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                children: [
+                  _item(context, currentLocation, Icons.chat_bubble_outline, 'Chat / Nouvelle discussion', AppRoutes.chat),
+                  _item(context, currentLocation, Icons.image_outlined, 'G\u00e9n\u00e9ration d\'image', AppRoutes.generateImage),
+                  _item(context, currentLocation, Icons.movie_outlined, 'G\u00e9n\u00e9ration de vid\u00e9o', AppRoutes.generateVideo),
+                  _item(context, currentLocation, Icons.view_in_ar_outlined, 'Biblioth\u00e8que des mod\u00e8les', AppRoutes.modelSelection),
+                  _item(context, currentLocation, Icons.query_stats, 'Suivi de la consommation', AppRoutes.usage),
+                  _item(context, currentLocation, Icons.key_outlined, 'Cl\u00e9 API', AppRoutes.byok),
+                  _item(context, currentLocation, Icons.settings_outlined, 'Param\u00e8tres', AppRoutes.settings),
+                  _item(context, currentLocation, Icons.info_outline, '\u00c0 propos', AppRoutes.about),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _item(BuildContext context, String current, IconData icon, String label, String route) {
+    final selected = current == route;
+    return ListTile(
+      leading: Icon(icon, color: selected ? const Color(0xFFFF6600) : const Color(0xFF94A3B8)),
+      title: Text(label),
+      selected: selected,
+      selectedTileColor: const Color(0x1AFF6600),
+      onTap: () {
+        Navigator.of(context).pop();
+        context.go(route);
+      },
+    );
+  }
+}

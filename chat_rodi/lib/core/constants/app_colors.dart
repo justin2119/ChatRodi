@@ -1,25 +1,20 @@
 import 'package:flutter/material.dart';
 
-/// Palette officielle de RodiumAi, centralisée pour conserver une identité
-/// visuelle cohérente et faciliter toute évolution ultérieure des couleurs.
+/// Palette officielle de RodiumAi.
 abstract final class AppColors {
-  /// Émeraude RodiumAi (#00C9A7) : couleur d'accent, associée aux actions
-  /// principales et aux états positifs sans surcharger l'interface.
-  static const Color emerald = Color(0xFF00C9A7);
+  /// Deep Orange (#FF6600), couleur principale de la marque.
+  static const Color emerald = Color(0xFFFF6600);
+  static const Color primary = Color(0xFFFF6600);
 
-  /// Ardoise profonde (#0F172A) : fond sombre principal, confortable en faible
-  /// luminosité et suffisamment contrasté avec les contenus.
-  static const Color deepSlate = Color(0xFF0F172A);
-  static const Color background = deepSlate;
+  /// Fond sombre principal (#0D0D0D).
+  static const Color deepSlate = Color(0xFF0D0D0D);
+  static const Color background = Color(0xFF0D0D0D);
 
-  /// Surface (#1E293B) : distinction discrète des cartes et conteneurs sur le
-  /// fond profond, sans introduire de couleur concurrente.
-  static const Color surface = Color(0xFF1E293B);
+  /// Surface des cartes et conteneurs.
+  static const Color surface = Color(0xFF1A1A1A);
   static const Color container = surface;
 
-  /// Texte primaire (#F8FAFC) : contraste élevé pour les contenus essentiels.
-  static const Color textPrimary = Color(0xFFF8FAFC);
-
-  /// Bordure subtile (#334155) : séparateurs visibles mais non dominants.
-  static const Color subtleBorder = Color(0xFF334155);
+  static const Color textPrimary = Color(0xFFFFFFFF);
+  static const Color textSecondary = Color(0xFF94A3B8);
+  static const Color subtleBorder = Color(0xFF333333);
 }
