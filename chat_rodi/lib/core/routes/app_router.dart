@@ -1,5 +1,6 @@
 import 'package:go_router/go_router.dart';
 
+import 'package:chat_rodi/features/auth/presentation/screens/auth_screen.dart';
 import 'package:chat_rodi/features/auth_byok/presentation/screens/byok_screen.dart';
 import 'package:chat_rodi/features/chat/presentation/screens/chat_screen.dart';
 import 'package:chat_rodi/features/model_selection/presentation/screens/model_selection_screen.dart';
@@ -13,6 +14,7 @@ import 'package:chat_rodi/features/splash/presentation/screens/splash_screen.dar
 abstract final class AppRoutes {
   static const splash = '/splash';
   static const byok = '/';
+  static const auth = '/auth';
   static const chat = '/chat';
   static const modelSelection = '/models';
   static const generateImage = '/generate-image';
@@ -27,6 +29,7 @@ final appRouter = GoRouter(
   routes: [
     GoRoute(path: AppRoutes.splash, name: 'splash', builder: (context, state) => const SplashScreen()),
     GoRoute(path: AppRoutes.byok, name: 'byok', builder: (context, state) => const ByokScreen()),
+    GoRoute(path: AppRoutes.auth, name: 'auth', builder: (context, state) => const AuthScreen()),
     GoRoute(path: AppRoutes.chat, name: 'chat', builder: (context, state) => const ChatScreen()),
     GoRoute(path: AppRoutes.modelSelection, name: 'modelSelection', builder: (context, state) => const ModelSelectionScreen()),
     GoRoute(path: AppRoutes.generateImage, name: 'generateImage', builder: (context, state) => const ImageGenerationScreen()),
