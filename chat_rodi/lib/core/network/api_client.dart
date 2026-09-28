@@ -1,32 +1,40 @@
 import 'package:dio/dio.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../security/byok_storage_service.dart';
 
+/// Environment-backed API configuration with safe defaults.
+class ApiEndpoints {
+  static String get baseUrl => _env('RODIUM_BASE_URL', 'https://api.rodiumai.io/v1/');
+  static String get chat => _env('RODIUM_CHAT_ENDPOINT', 'chat/completions');
+  static String get image => _env('RODIUM_IMAGE_ENDPOINT', 'images/generations');
+  static String get video => _env('RODIUM_VIDEO_ENDPOINT', 'videos/generations');
+  static String get models => _env('RODIUM_MODELS_ENDPOINT', 'models');
+
+  static String _env(String key, String fallback) {
+    try {
+      final value = dotenv.env[key]?.trim();
+      return value == null || value.isEmpty ? fallback : value;
+    } catch (_) {
+      return fallback;
+    }
+  }
+}
+
 /// Client réseau centralisé pour les appels à l'API RodiumAi.
-///
 /// Cette classe regroupe la configuration Dio et permet aux couches
 /// supérieures de dépendre d'un client unique, facile à remplacer en test.
 class ApiClient {
-  /// Construit le client avec Dio déjà configuré par [dio].
   const ApiClient(this.dio);
-
-  /// Instance Dio utilisée pour effectuer les requêtes HTTP.
   final Dio dio;
 }
 
 /// Intercepteur chargé d'ajouter la clé BYOK à chaque requête.
-///
-/// La clé est relue dans le stockage sécurisé au moment de chaque appel afin
-/// de prendre en compte immédiatement une mise à jour ou une suppression.
-/// Elle n'est jamais écrite dans les logs ni dans l'URL.
 class _ByokAuthInterceptor extends Interceptor {
-  /// Le service sécurisé est injecté pour faciliter les tests.
   _ByokAuthInterceptor(this._storageService);
-
   final ByokStorageService _storageService;
 
-  /// Ajoute l'en-tête Bearer uniquement lorsqu'une clé non vide est disponible.
   @override
   Future<void> onRequest(
     RequestOptions options,
@@ -39,8 +47,6 @@ class _ByokAuthInterceptor extends Interceptor {
       }
       handler.next(options);
     } catch (error, stackTrace) {
-      // Une erreur de lecture ne doit pas laisser la requête bloquée. La
-      // requête poursuit son cours sans secret et l'API pourra la refuser.
       handler.reject(
         DioException(
           requestOptions: options,
@@ -54,15 +60,11 @@ class _ByokAuthInterceptor extends Interceptor {
   }
 }
 
-/// Fournisseur Dio classique, configuré pour l'API RodiumAi.
-///
-/// Riverpod transmet le stockage sécurisé à l'intercepteur ; aucune clé
-/// sensible n'est conservée dans la configuration statique du client.
 final dioProvider = Provider<Dio>((ref) {
   final storageService = ref.watch(byokStorageServiceProvider);
   final dio = Dio(
     BaseOptions(
-      baseUrl: 'https://api.rodiumai.io/v1/',
+      baseUrl: ApiEndpoints.baseUrl,
       connectTimeout: const Duration(seconds: 30),
       receiveTimeout: const Duration(seconds: 30),
       headers: const <String, dynamic>{'Accept': 'application/json'},
@@ -77,13 +79,10 @@ final dioProvider = Provider<Dio>((ref) {
       },
     ),
   );
-
-  // L'intercepteur est ajouté une seule fois à la construction de Dio.
   dio.interceptors.add(_ByokAuthInterceptor(storageService));
   return dio;
 });
 
-/// Fournisseur de la façade réseau utilisée par les fonctionnalités métier.
 final apiClientProvider = Provider<ApiClient>((ref) {
   return ApiClient(ref.watch(dioProvider));
 });
