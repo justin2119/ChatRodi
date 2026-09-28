@@ -62,10 +62,19 @@ final dioProvider = Provider<Dio>((ref) {
   final storageService = ref.watch(byokStorageServiceProvider);
   final dio = Dio(
     BaseOptions(
-      baseUrl: 'https://api.rodiumai.io/v1',
+      baseUrl: 'https://api.rodiumai.io/v1/',
       connectTimeout: const Duration(seconds: 30),
       receiveTimeout: const Duration(seconds: 30),
       headers: const <String, dynamic>{'Accept': 'application/json'},
+    ),
+  );
+
+  dio.interceptors.add(
+    InterceptorsWrapper(
+      onRequest: (options, handler) {
+        print('[DIO REQUEST] ${options.baseUrl}${options.path}');
+        return handler.next(options);
+      },
     ),
   );
 
