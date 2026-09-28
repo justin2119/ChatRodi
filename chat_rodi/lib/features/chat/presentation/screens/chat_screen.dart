@@ -46,7 +46,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       drawer: const ChatDrawer(),
       body: Column(children: [
         Expanded(child: state.messages.isEmpty
-            ? const Center(child: Text('Bonjour \\u2728\\nComment puis-je vous aider aujourd’hui ?', textAlign: TextAlign.center, style: TextStyle(color: Colors.white70, fontSize: 18)))
+            ? const Center(child: Text('Bonjour. Comment puis-je vous aider aujourd’hui ?', textAlign: TextAlign.center, style: TextStyle(color: Colors.white70, fontSize: 18)))
             : ListView.builder(padding: const EdgeInsets.all(16), itemCount: state.messages.length, itemBuilder: (context, index) => _MessageBubble(message: state.messages[index]))),
         if (state.errorMessage != null) Padding(padding: const EdgeInsets.all(8), child: Text(state.errorMessage!, style: const TextStyle(color: Colors.redAccent))),
         SafeArea(top: false, child: Container(
