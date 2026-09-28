@@ -3,36 +3,125 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/routes/app_router.dart';
 
-/// Navigation principale vers les fonctionnalites de RodiumAi.
+/// Drawer correspondant a l'ecran 12 du mockup RodiumAi.
 class ChatDrawer extends StatelessWidget {
   const ChatDrawer({super.key});
+
+  static const _background = Color(0xFF0D0D0D);
+  static const _surface = Color(0xFF1A1A1A);
+  static const _orange = Color(0xFFFF6600);
+  static const _muted = Color(0xFFB3B3B3);
 
   @override
   Widget build(BuildContext context) {
     final currentLocation = GoRouterState.of(context).uri.path;
     return Drawer(
-      backgroundColor: const Color(0xFF1A1A1A),
+      backgroundColor: _background,
       child: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Padding(
-              padding: EdgeInsets.fromLTRB(20, 24, 20, 20),
-              child: Text('RodiumAi', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 16, 18),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 25,
+                    backgroundColor: _surface,
+                    child: const Icon(Icons.person_outline, color: Colors.white, size: 27),
+                  ),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Utilisateur', style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600)),
+                        SizedBox(height: 3),
+                        Text('user@example.com', style: TextStyle(color: _muted, fontSize: 12)),
+                      ],
+                    ),
+                  ),
+                  const Icon(Icons.more_horiz, color: _muted),
+                ],
+              ),
             ),
-            const Divider(height: 1),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 18),
+              child: SizedBox(
+                height: 48,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    context.go(AppRoutes.chat);
+                  },
+                  icon: const Icon(Icons.add, size: 20),
+                  label: const Text('Nouveau chat', style: TextStyle(fontWeight: FontWeight.w600)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _orange,
+                    foregroundColor: Colors.white,
+                    shape: const StadiumBorder(),
+                    elevation: 0,
+                  ),
+                ),
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(20, 25, 20, 10),
+              child: Text('Conversations', style: TextStyle(color: _muted, fontSize: 12, fontWeight: FontWeight.w600, letterSpacing: .5)),
+            ),
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.symmetric(vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 10),
                 children: [
-                  _item(context, currentLocation, Icons.chat_bubble_outline, 'Chat / Nouvelle discussion', AppRoutes.chat),
-                  _item(context, currentLocation, Icons.image_outlined, 'G\u00e9n\u00e9ration d\'image', AppRoutes.generateImage),
-                  _item(context, currentLocation, Icons.movie_outlined, 'G\u00e9n\u00e9ration de vid\u00e9o', AppRoutes.generateVideo),
-                  _item(context, currentLocation, Icons.view_in_ar_outlined, 'Biblioth\u00e8que des mod\u00e8les', AppRoutes.modelSelection),
-                  _item(context, currentLocation, Icons.query_stats, 'Suivi de la consommation', AppRoutes.usage),
-                  _item(context, currentLocation, Icons.key_outlined, 'Cl\u00e9 API', AppRoutes.byok),
-                  _item(context, currentLocation, Icons.settings_outlined, 'Param\u00e8tres', AppRoutes.settings),
-                  _item(context, currentLocation, Icons.info_outline, '\u00c0 propos', AppRoutes.about),
+                  _conversation(context, 'Projet Flutter ChatRodi'),
+                  _conversation(context, 'Explication Physique Chimie'),
+                  _conversation(context, 'Architecture Supabase'),
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(10, 23, 10, 10),
+                    child: Text('NAVIGATION', style: TextStyle(color: _muted, fontSize: 11, fontWeight: FontWeight.w600, letterSpacing: .8)),
+                  ),
+                  _navItem(context, currentLocation, Icons.widgets_outlined, 'Mod\u00e8les', AppRoutes.modelSelection),
+                  _navItem(context, currentLocation, Icons.bar_chart_rounded, 'Utilisation', AppRoutes.usage),
+                  _navItem(context, currentLocation, Icons.key_outlined, 'Cl\u00e9 API', AppRoutes.byok),
+                  _navItem(context, currentLocation, Icons.settings_outlined, 'Param\u00e8tres', AppRoutes.settings),
+                  ListTile(
+                    dense: true,
+                    leading: const Icon(Icons.help_outline, color: _muted, size: 20),
+                    title: const Text('Aide & support', style: TextStyle(color: Colors.white, fontSize: 14)),
+                    onTap: () {
+                      showDialog<void>(
+                        context: context,
+                        builder: (dialogContext) => AlertDialog(
+                          backgroundColor: _surface,
+                          title: const Text('Aide & support', style: TextStyle(color: Colors.white)),
+                          content: const Text('Besoin d\'aide ? Contactez notre equipe de support.', style: TextStyle(color: _muted)),
+                          actions: [TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Fermer', style: TextStyle(color: _orange)))],
+                        ),
+                      );
+                    },
+                  ),
+                  _navItem(context, currentLocation, Icons.info_outline, '\u00c0 propos', AppRoutes.about),
+                ],
+              ),
+            ),
+            Container(
+              margin: const EdgeInsets.fromLTRB(16, 8, 16, 14),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(color: _surface, borderRadius: BorderRadius.circular(14)),
+              child: const Row(
+                children: [
+                  Icon(Icons.auto_awesome, color: _orange, size: 23),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('RodiumAi', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
+                        SizedBox(height: 3),
+                        Text('Plus de 100 mod\u00e8les. Une seule API.', style: TextStyle(color: _muted, fontSize: 11)),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -42,13 +131,35 @@ class ChatDrawer extends StatelessWidget {
     );
   }
 
-  Widget _item(BuildContext context, String current, IconData icon, String label, String route) {
+  Widget _conversation(BuildContext context, String title) {
+    return ListTile(
+      dense: true,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 10),
+      leading: const Icon(Icons.chat_bubble_outline, color: _muted, size: 18),
+      title: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white, fontSize: 13)),
+      trailing: PopupMenuButton<String>(
+        padding: EdgeInsets.zero,
+        icon: const Icon(Icons.more_horiz, color: _muted, size: 18),
+        color: _surface,
+        onSelected: (_) {},
+        itemBuilder: (context) => const [PopupMenuItem(value: 'options', child: Text('Options', style: TextStyle(color: Colors.white)))],
+      ),
+      onTap: () {
+        Navigator.of(context).pop();
+        context.go(AppRoutes.chat);
+      },
+    );
+  }
+
+  Widget _navItem(BuildContext context, String current, IconData icon, String label, String route) {
     final selected = current == route;
     return ListTile(
-      leading: Icon(icon, color: selected ? const Color(0xFFFF6600) : const Color(0xFF94A3B8)),
-      title: Text(label),
+      dense: true,
+      leading: Icon(icon, color: selected ? _orange : _muted, size: 20),
+      title: Text(label, style: TextStyle(color: selected ? Colors.white : _muted, fontSize: 14)),
       selected: selected,
-      selectedTileColor: const Color(0x1AFF6600),
+      selectedTileColor: const Color(0x26FF6600),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       onTap: () {
         Navigator.of(context).pop();
         context.go(route);
