@@ -35,7 +35,7 @@ class ChatDrawer extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 18),
               child: SizedBox(height: 48, child: ElevatedButton.icon(
-                onPressed: () { Navigator.of(context).pop(); context.go(AppRoutes.chat); },
+                onPressed: () { final router = GoRouter.of(context); Navigator.of(context).pop(); router.go(AppRoutes.chat); },
                 icon: const Icon(Icons.add, size: 20),
                 label: const Text('Nouveau chat', style: TextStyle(fontWeight: FontWeight.w600)),
                 style: ElevatedButton.styleFrom(backgroundColor: _orange, foregroundColor: Colors.white, shape: const StadiumBorder(), elevation: 0),
@@ -72,7 +72,7 @@ class ChatDrawer extends StatelessWidget {
     leading: const Icon(Icons.chat_bubble_outline, color: _muted, size: 18),
     title: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white, fontSize: 13)),
     trailing: PopupMenuButton<String>(padding: EdgeInsets.zero, icon: const Icon(Icons.more_horiz, color: _muted, size: 18), color: _surface, onSelected: (_) {}, itemBuilder: (context) => const [PopupMenuItem(value: 'options', child: Text('Options', style: TextStyle(color: Colors.white)))]),
-    onTap: () { Navigator.of(context).pop(); context.go(AppRoutes.chat); },
+    onTap: () { final router = GoRouter.of(context); Navigator.of(context).pop(); router.go(AppRoutes.chat); },
   );
 
   Widget _navItem(BuildContext context, String current, IconData icon, String label, String route) {
@@ -85,9 +85,9 @@ class ChatDrawer extends StatelessWidget {
       selectedTileColor: const Color(0x26FF6600),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       onTap: () {
-        // Close the modal drawer first, then push so Back restores the chat route.
+        final router = GoRouter.of(context);
         Navigator.of(context).pop();
-        context.push(route);
+        router.push(route);
       },
     );
   }

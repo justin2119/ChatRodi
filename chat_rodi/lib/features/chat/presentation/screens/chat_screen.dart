@@ -8,6 +8,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../domain/models/message_model.dart';
 import '../viewmodels/chat_viewmodel.dart';
 import '../widgets/attachment_menu_bottom_sheet.dart';
+import '../widgets/chat_drawer.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen({super.key});
@@ -42,10 +43,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         title: InkWell(onTap: () => context.go('/models'), child: Text(state.selectedModel, style: const TextStyle(color: AppColors.textPrimary))),
         centerTitle: true,
       ),
-      drawer: Drawer(backgroundColor: AppColors.deepSlate, child: SafeArea(child: ListView(children: [
-        const ListTile(title: Text('RodiumAi', style: TextStyle(color: Colors.white))),
-        ListTile(title: const Text('Mod\\u00e8les'), onTap: () { Navigator.pop(context); context.go('/models'); }),
-      ]))),
+      drawer: const ChatDrawer(),
       body: Column(children: [
         Expanded(child: state.messages.isEmpty
             ? const Center(child: Text('Bonjour \\u2728\\nComment puis-je vous aider aujourd’hui ?', textAlign: TextAlign.center, style: TextStyle(color: Colors.white70, fontSize: 18)))
