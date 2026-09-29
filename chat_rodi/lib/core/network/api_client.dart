@@ -6,7 +6,11 @@ import '../security/byok_storage_service.dart';
 
 /// Environment-backed API configuration with safe defaults.
 class ApiEndpoints {
-  static String get baseUrl => _env('RODIUM_BASE_URL', 'https://api.rodiumai.io/v1/');
+  static String get baseUrl {
+    final url = _env('RODIUM_BASE_URL', 'https://api.rodiumai.io/v1/');
+    return url.endsWith('/') ? url : '$url/';
+  }
+
   static String get chat => _env('RODIUM_CHAT_ENDPOINT', 'chat/completions');
   static String get image => _env('RODIUM_IMAGE_ENDPOINT', 'images/generations');
   static String get video => _env('RODIUM_VIDEO_ENDPOINT', 'videos/generations');
@@ -42,9 +46,15 @@ class _ByokAuthInterceptor extends Interceptor {
   ) async {
     try {
       final token = await _storageService.getApiKey();
-      if (token != null && token.isNotEmpty) {
-        options.headers['Authorization'] = 'Bearer $token';
+      if (token == null || token.isEmpty) {
+        return handler.reject(
+          DioException(
+            requestOptions: options,
+            error: 'Cl\\u00e9 API manquante. Veuillez configurer votre cl\\u00e9 BYOK.',
+          ),
+        );
       }
+      options.headers['Authorization'] = 'Bearer $token';
       handler.next(options);
     } catch (error, stackTrace) {
       handler.reject(
@@ -67,6 +77,7 @@ final dioProvider = Provider<Dio>((ref) {
       baseUrl: ApiEndpoints.baseUrl,
       connectTimeout: const Duration(seconds: 30),
       receiveTimeout: const Duration(seconds: 30),
+      contentType: Headers.jsonContentType,
       headers: const <String, dynamic>{'Accept': 'application/json'},
     ),
   );
