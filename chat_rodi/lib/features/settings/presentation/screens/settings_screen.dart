@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/theme/theme_provider.dart';
 
@@ -15,14 +16,43 @@ class SettingsScreen extends ConsumerWidget {
     final colors = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Param\\u00e8tres')),
+      appBar: AppBar(title: const Text('Param\u00e8tres')),
       body: ListView(
         padding: const EdgeInsets.all(18),
         children: [
-          _Section(title: 'G\\u00e9n\\u00e9ral', children: [
+          _Section(title: 'Compte & Authentification', children: [
+            StreamBuilder<AuthState>(
+              stream: Supabase.instance.client.auth.onAuthStateChange,
+              initialData: AuthState(AuthChangeEvent.initialSession, Supabase.instance.client.auth.currentSession),
+              builder: (context, snapshot) {
+                final user = snapshot.data?.session?.user ?? Supabase.instance.client.auth.currentUser;
+                return ListTile(
+                  leading: Icon(user == null ? Icons.person_outline : Icons.verified_user_outlined, color: const Color(0xFFFF6600)),
+                  title: Text(user?.email ?? 'Non connect\u00e9'),
+                  subtitle: Text(user == null ? 'Acc\u00e8s invit\u00e9' : 'Compte connect\u00e9'),
+                  trailing: ElevatedButton(
+                    onPressed: () async {
+                      if (user == null) {
+                        context.push('/auth');
+                      } else {
+                        await Supabase.instance.client.auth.signOut();
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFF6600),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
+                    ),
+                    child: Text(user == null ? 'Se connecter' : 'Se d\u00e9connecter'),
+                  ),
+                );
+              },
+            ),
+          ]),
+          _Section(title: 'G\u00e9n\u00e9ral', children: [
             ListTile(
               leading: const Icon(Icons.palette_outlined),
-              title: const Text('Th\\u00e8me'),
+              title: const Text('Th\u00e8me'),
               subtitle: Text(_themeLabel(themeMode)),
               trailing: DropdownButton<ThemeMode>(
                 value: themeMode,
@@ -30,7 +60,7 @@ class SettingsScreen extends ConsumerWidget {
                 items: const [
                   DropdownMenuItem(value: ThemeMode.dark, child: Text('Sombre')),
                   DropdownMenuItem(value: ThemeMode.light, child: Text('Clair')),
-                  DropdownMenuItem(value: ThemeMode.system, child: Text('Syst\\u00e8me')),
+                  DropdownMenuItem(value: ThemeMode.system, child: Text('Syst\u00e8me')),
                 ],
                 onChanged: (value) {
                   if (value != null) ref.read(themeModeProvider.notifier).setThemeMode(value);
@@ -38,17 +68,17 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
           ]),
-          _Section(title: 'Mod\\u00e8le & IA', children: [
+          _Section(title: 'Mod\u00e8le & IA', children: [
             ListTile(
               leading: const Icon(Icons.smart_toy_outlined),
-              title: const Text('Mod\\u00e8le par d\\u00e9faut'),
+              title: const Text('Mod\u00e8le par d\u00e9faut'),
               subtitle: Text(model),
               trailing: const Icon(Icons.edit_outlined),
               onTap: () => _editModel(context, ref, model),
             ),
             ListTile(
               leading: const Icon(Icons.tune),
-              title: const Text('Temp\\u00e9rature'),
+              title: const Text('Temp\u00e9rature'),
               subtitle: Text(temperature.toStringAsFixed(1)),
             ),
             Padding(
@@ -63,16 +93,16 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
           ]),
-          _Section(title: 'S\\u00e9curit\\u00e9 & Cl\\u00e9 API', children: [
+          _Section(title: 'S\u00e9curit\u00e9 & Cl\u00e9 API', children: [
             ListTile(
               leading: const Icon(Icons.key_outlined),
-              title: const Text('Cl\\u00e9 API (BYOK)'),
-              subtitle: const Text('Consulter le statut ou modifier la cl\\u00e9 enregistr\\u00e9e'),
+              title: const Text('Cl\u00e9 API (BYOK)'),
+              subtitle: const Text('Consulter le statut ou modifier la cl\u00e9 enregistr\u00e9e'),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => context.go('/'),
             ),
           ]),
-          _Section(title: '\\u00c0 propos & Version', children: const [
+          _Section(title: '\u00c0 propos & Version', children: const [
             ListTile(
               leading: Icon(Icons.info_outline),
               title: Text('ChatRodi'),
@@ -87,7 +117,7 @@ class SettingsScreen extends ConsumerWidget {
   static String _themeLabel(ThemeMode mode) => switch (mode) {
         ThemeMode.dark => 'Sombre',
         ThemeMode.light => 'Clair',
-        ThemeMode.system => 'Syst\\u00e8me',
+        ThemeMode.system => 'Syst\u00e8me',
       };
 
   static Future<void> _editModel(BuildContext context, WidgetRef ref, String current) async {
@@ -95,11 +125,11 @@ class SettingsScreen extends ConsumerWidget {
     final value = await showDialog<String>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Mod\\u00e8le par d\\u00e9faut'),
+        title: const Text('Mod\u00e8le par d\u00e9faut'),
         content: TextField(
           controller: controller,
           decoration: const InputDecoration(
-            labelText: 'Identifiant du mod\\u00e8le',
+            labelText: 'Identifiant du mod\u00e8le',
             hintText: 'Auto',
           ),
         ),
