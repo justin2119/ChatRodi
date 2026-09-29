@@ -1,66 +1,88 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../constants/app_colors.dart';
-
-/// Thème global de RodiumAi.
+/// Shared light and dark themes for ChatRodi.
 abstract final class AppTheme {
-  static ThemeData get dark {
-    const colorScheme = ColorScheme.dark(
-      primary: AppColors.primary,
-      onPrimary: Colors.white,
-      secondary: AppColors.primary,
-      onSecondary: Colors.white,
-      surface: AppColors.surface,
-      onSurface: AppColors.textPrimary,
-      error: Color(0xFFFF6B6B),
-      onError: Colors.black,
-    );
+  static const _primary = Color(0xFFFF6600);
 
-    return ThemeData(
-      brightness: Brightness.dark,
-      colorScheme: colorScheme,
-      scaffoldBackgroundColor: AppColors.background,
-      canvasColor: AppColors.background,
-      cardColor: AppColors.surface,
-      dividerColor: AppColors.subtleBorder,
+  static ThemeData get dark => _create(
+        brightness: Brightness.dark,
+        background: const Color(0xFF0D0D0D),
+        surface: const Color(0xFF1A1A1A),
+        text: const Color(0xFFFFFFFF),
+      );
+
+  static ThemeData get light => _create(
+        brightness: Brightness.light,
+        background: const Color(0xFFFFFFFF),
+        surface: const Color(0xFFF5F5F5),
+        text: const Color(0xFF000000),
+      );
+
+  static ThemeData _create({
+    required Brightness brightness,
+    required Color background,
+    required Color surface,
+    required Color text,
+  }) {
+    final scheme = ColorScheme.fromSeed(
+      seedColor: _primary,
+      brightness: brightness,
+      primary: _primary,
+      onPrimary: Colors.white,
+      surface: surface,
+      onSurface: text,
+    );
+    final base = ThemeData(
+      brightness: brightness,
+      colorScheme: scheme,
+      scaffoldBackgroundColor: background,
+      canvasColor: background,
+      cardColor: surface,
       useMaterial3: true,
-      textTheme: GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme).apply(
-        bodyColor: AppColors.textPrimary,
-        displayColor: AppColors.textPrimary,
-      ),
-      appBarTheme: const AppBarTheme(
-        backgroundColor: AppColors.background,
-        foregroundColor: AppColors.textPrimary,
+      textTheme: GoogleFonts.poppinsTextTheme(
+        brightness == Brightness.dark ? ThemeData.dark().textTheme : ThemeData.light().textTheme,
+      ).apply(bodyColor: text, displayColor: text),
+    );
+    return base.copyWith(
+      appBarTheme: AppBarTheme(
+        backgroundColor: background,
+        foregroundColor: text,
         elevation: 0,
         centerTitle: false,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.surface,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(24),
-          borderSide: const BorderSide(color: AppColors.subtleBorder),
-        ),
+        fillColor: surface,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(50)),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(24),
-          borderSide: const BorderSide(color: AppColors.subtleBorder),
+          borderRadius: BorderRadius.circular(50),
+          borderSide: BorderSide(color: text.withValues(alpha: 0.18)),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(24),
-          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+          borderRadius: BorderRadius.circular(50),
+          borderSide: const BorderSide(color: _primary, width: 1.5),
         ),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          backgroundColor: AppColors.primary,
+          backgroundColor: _primary,
           foregroundColor: Colors.white,
-          shape: const StadiumBorder(),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
+        ),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: _primary,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
-        style: OutlinedButton.styleFrom(shape: const StadiumBorder()),
+        style: OutlinedButton.styleFrom(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
+        ),
       ),
     );
   }

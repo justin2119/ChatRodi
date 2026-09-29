@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/routes/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/theme_provider.dart';
 
 const _supabaseUrl = 'https://tgxpyykmwsaeijlgtuex.supabase.co';
 // Supabase publishable/anon keys are public client identifiers, not secrets.
@@ -26,17 +27,18 @@ Future<void> main() async {
   runApp(const ProviderScope(child: ChatRodiApp()));
 }
 
-class ChatRodiApp extends StatelessWidget {
+class ChatRodiApp extends ConsumerWidget {
   const ChatRodiApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final mode = ref.watch(themeModeProvider);
     return MaterialApp.router(
       title: 'ChatRodi',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.dark,
+      theme: AppTheme.light,
       darkTheme: AppTheme.dark,
-      themeMode: ThemeMode.dark,
+      themeMode: mode,
       routerConfig: appRouter,
     );
   }
