@@ -5,12 +5,12 @@ import 'package:go_router/go_router.dart';
 
 import '../viewmodels/byok_viewmodel.dart';
 
-/// Écran de configuration initiale de la clé API RodiumAi.
+/// Ecran de configuration initiale de la cle API RodiumAi.
 ///
-/// La clé reste dans le champ de saisie puis dans le stockage sécurisé ; elle
-/// n'est jamais copiée dans l'état Riverpod.
+/// La cle reste dans le champ de saisie puis dans le stockage securise ; elle
+/// n'est jamais copiee dans l'etat Riverpod.
 class ByokScreen extends ConsumerStatefulWidget {
-  /// Crée l'écran BYOK.
+  /// Cree l'ecran BYOK.
   const ByokScreen({super.key});
 
   @override
@@ -18,20 +18,20 @@ class ByokScreen extends ConsumerStatefulWidget {
 }
 
 class _ByokScreenState extends ConsumerState<ByokScreen> {
-  /// Palette sombre et accent émeraude de l'écran.
-  static const Color _deepSlate = Color(0xFF0F172A);
-  static const Color _emerald = Color(0xFF00C9A7);
-  static const Color _surface = Color(0xFF1E293B);
-  static const Color _textPrimary = Color(0xFFF8FAFC);
-  static const Color _textSecondary = Color(0xFF94A3B8);
+  /// Palette sombre officielle RodiumAi.
+  static const Color _background = Color(0xFF0D0D0D);
+  static const Color _primary = Color(0xFFFF6600);
+  static const Color _surface = Color(0xFF1A1A1A);
+  static const Color _textPrimary = Color(0xFFFFFFFF);
+  static const Color _textSecondary = Colors.white70;
 
-  /// Contrôleur local du champ, pour ne pas exposer le secret dans le provider.
+  /// Controleur local du champ, pour ne pas exposer le secret dans le provider.
   final TextEditingController _keyController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    // Recherche une éventuelle clé existante dès l'ouverture de l'écran.
+    // Recherche une eventuelle cle existante des l'ouverture de l'ecran.
     Future<void>.microtask(
       () => ref.read(byokViewModelProvider.notifier).checkExistingKey(),
     );
@@ -39,7 +39,7 @@ class _ByokScreenState extends ConsumerState<ByokScreen> {
 
   @override
   void dispose() {
-    // Libère les ressources associées au champ.
+    // Libere les ressources associees au champ.
     _keyController.dispose();
     super.dispose();
   }
@@ -55,7 +55,7 @@ class _ByokScreenState extends ConsumerState<ByokScreen> {
       ..selection = TextSelection.collapsed(offset: key.length);
   }
 
-  /// Demande au ViewModel d'enregistrer la clé saisie.
+  /// Demande au ViewModel d'enregistrer la cle saisie.
   Future<void> _saveKey() async {
     await ref.read(byokViewModelProvider.notifier).saveKey(_keyController.text);
   }
@@ -76,7 +76,7 @@ class _ByokScreenState extends ConsumerState<ByokScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: const [
               Text(
-                'Où trouver ma clé API ?',
+                'O\u00f9 trouver ma cl\u00e9 API ?',
                 style: TextStyle(
                   color: _textPrimary,
                   fontSize: 18,
@@ -85,7 +85,7 @@ class _ByokScreenState extends ConsumerState<ByokScreen> {
               ),
               SizedBox(height: 12),
               Text(
-                'Connectez-vous à votre compte RodiumAi, ouvrez la section de gestion des clés API, puis copiez une clé active. Ne partagez jamais cette clé avec qui que ce soit.',
+                'Connectez-vous \u00e0 votre compte RodiumAi, ouvrez la section de gestion des cl\u00e9s API, puis copiez une cl\u00e9 active. Ne partagez jamais cette cl\u00e9 avec qui que ce soit.',
                 style: TextStyle(color: _textSecondary, height: 1.5),
               ),
             ],
@@ -95,7 +95,7 @@ class _ByokScreenState extends ConsumerState<ByokScreen> {
     );
   }
 
-  /// Construit un bouton principal à dégradé, commun aux deux états.
+  /// Construit un bouton principal commun aux deux etats.
   Widget _gradientButton({
     required String label,
     required VoidCallback? onPressed,
@@ -103,56 +103,46 @@ class _ByokScreenState extends ConsumerState<ByokScreen> {
   }) {
     return SizedBox(
       height: 56,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [_emerald, const Color(0xFF00A887)],
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: _primary,
+          disabledBackgroundColor: _primary.withValues(alpha: 0.5),
+          foregroundColor: _textPrimary,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(50),
           ),
-          borderRadius: BorderRadius.circular(14),
         ),
-        child: ElevatedButton(
-          onPressed: onPressed,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.transparent,
-            disabledBackgroundColor: Colors.transparent,
-            shadowColor: Colors.transparent,
-            foregroundColor: _deepSlate,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
-            ),
-          ),
-          child: isLoading
-              ? const SizedBox(
-                  width: 22,
-                  height: 22,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2.5,
-                    color: _deepSlate,
-                  ),
-                )
-              : Text(
-                  label,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                  ),
+        child: isLoading
+            ? const SizedBox(
+                width: 22,
+                height: 22,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.5,
+                  color: _textPrimary,
                 ),
-        ),
+              )
+            : Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
       ),
     );
   }
 
-  /// Présente l'écran d'enregistrement ou l'écran de succès.
+  /// Presente l'ecran d'enregistrement ou l'ecran de succes.
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(byokViewModelProvider);
 
     return Scaffold(
-      backgroundColor: _deepSlate,
+      backgroundColor: _background,
       appBar: AppBar(
-        // Règle de style : la barre d'application doit rester parfaitement carrée.
         shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-        backgroundColor: _deepSlate,
+        backgroundColor: _background,
         foregroundColor: _textPrimary,
         elevation: 0,
         title: const Text(
@@ -176,7 +166,7 @@ class _ByokScreenState extends ConsumerState<ByokScreen> {
     );
   }
 
-  /// État initial : saisie, aide, erreurs et note de sécurité.
+  /// Etat initial : saisie, aide, erreurs et note de securite.
   Widget _buildEntry(ByokState state) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -189,12 +179,12 @@ class _ByokScreenState extends ConsumerState<ByokScreen> {
               color: _surface,
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.lock_outline, color: _emerald, size: 38),
+            child: const Icon(Icons.lock_outline, color: _primary, size: 38),
           ),
         ),
         const SizedBox(height: 24),
         const Text(
-          'Ajoutez votre clé API RodiumAi',
+          'Ajoutez votre cl\u00e9 API RodiumAi',
           textAlign: TextAlign.center,
           style: TextStyle(
             color: _textPrimary,
@@ -204,7 +194,7 @@ class _ByokScreenState extends ConsumerState<ByokScreen> {
         ),
         const SizedBox(height: 12),
         const Text(
-          'Pour accéder aux modèles d’IA et utiliser toutes les fonctionnalités, veuillez entrer votre clé API RodiumAi. Elle sera stockée uniquement sur votre appareil de manière sécurisée.',
+          'Pour acc\u00e9der aux mod\u00e8les d\u2019IA et utiliser toutes les fonctionnalit\u00e9s, veuillez entrer votre cl\u00e9 API RodiumAi. Elle sera stock\u00e9e uniquement sur votre appareil de mani\u00e8re s\u00e9curis\u00e9e.',
           textAlign: TextAlign.center,
           style: TextStyle(color: _textSecondary, fontSize: 14, height: 1.55),
         ),
@@ -216,23 +206,23 @@ class _ByokScreenState extends ConsumerState<ByokScreen> {
           enableSuggestions: false,
           style: const TextStyle(color: _textPrimary),
           decoration: InputDecoration(
-            labelText: 'Clé API RodiumAi',
+            labelText: 'Cl\u00e9 API RodiumAi',
             hintText: 'rd_sk....',
             labelStyle: const TextStyle(color: _textSecondary),
-            hintStyle: const TextStyle(color: Color(0xFF64748B)),
+            hintStyle: const TextStyle(color: Colors.white54),
             filled: true,
             fillColor: _surface,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(50),
               borderSide: BorderSide.none,
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFF334155)),
+              borderRadius: BorderRadius.circular(50),
+              borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.12)),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: _emerald, width: 1.5),
+              borderRadius: BorderRadius.circular(50),
+              borderSide: const BorderSide(color: _primary, width: 1.5),
             ),
             suffixIcon: Row(
               mainAxisSize: MainAxisSize.min,
@@ -244,7 +234,7 @@ class _ByokScreenState extends ConsumerState<ByokScreen> {
                   color: _textSecondary,
                 ),
                 IconButton(
-                  tooltip: state.isObscured ? 'Afficher la clé' : 'Masquer la clé',
+                  tooltip: state.isObscured ? 'Afficher la cl\u00e9' : 'Masquer la cl\u00e9',
                   onPressed: () => ref
                       .read(byokViewModelProvider.notifier)
                       .toggleObscure(),
@@ -262,8 +252,11 @@ class _ByokScreenState extends ConsumerState<ByokScreen> {
           alignment: Alignment.centerLeft,
           child: TextButton(
             onPressed: _showKeyHelp,
-            style: TextButton.styleFrom(foregroundColor: _emerald),
-            child: const Text('Où trouver ma clé API ?'),
+            style: TextButton.styleFrom(
+              foregroundColor: _primary,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
+            ),
+            child: const Text('O\u00f9 trouver ma cl\u00e9 API ?'),
           ),
         ),
         if (state.errorMessage != null) ...[
@@ -283,13 +276,13 @@ class _ByokScreenState extends ConsumerState<ByokScreen> {
         const Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.shield_outlined, color: Color(0xFF64748B), size: 17),
+            Icon(Icons.shield_outlined, color: Colors.white54, size: 17),
             SizedBox(width: 8),
             Flexible(
               child: Text(
-                'Votre clé est stockée dans un espace sécurisé sur votre appareil.',
+                'Votre cl\u00e9 est stock\u00e9e dans un espace s\u00e9curis\u00e9 sur votre appareil.',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Color(0xFF64748B), fontSize: 12),
+                style: TextStyle(color: Colors.white70, fontSize: 12),
               ),
             ),
           ],
@@ -298,7 +291,7 @@ class _ByokScreenState extends ConsumerState<ByokScreen> {
     );
   }
 
-  /// État de confirmation affiché après l'enregistrement réussi.
+  /// Etat de confirmation affiche apres l'enregistrement reussi.
   Widget _buildSuccess() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -308,15 +301,15 @@ class _ByokScreenState extends ConsumerState<ByokScreen> {
             width: 92,
             height: 92,
             decoration: BoxDecoration(
-              color: _emerald.withValues(alpha: 0.12),
+              color: _primary.withValues(alpha: 0.12),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.check_rounded, color: _emerald, size: 54),
+            child: const Icon(Icons.check_rounded, color: _primary, size: 54),
           ),
         ),
         const SizedBox(height: 26),
         const Text(
-          'Clé API enregistrée !',
+          'Cl\u00e9 API enregistr\u00e9e !',
           textAlign: TextAlign.center,
           style: TextStyle(
             color: _textPrimary,
@@ -326,13 +319,13 @@ class _ByokScreenState extends ConsumerState<ByokScreen> {
         ),
         const SizedBox(height: 12),
         const Text(
-          'Votre clé RodiumAi est maintenant sécurisée sur votre appareil. Vous pouvez commencer à utiliser l’assistant IA.',
+          'Votre cl\u00e9 RodiumAi est maintenant s\u00e9curis\u00e9e sur votre appareil. Vous pouvez commencer \u00e0 utiliser l\u2019assistant IA.',
           textAlign: TextAlign.center,
           style: TextStyle(color: _textSecondary, fontSize: 14, height: 1.55),
         ),
         const SizedBox(height: 32),
         _gradientButton(
-          label: 'Accéder à l’application',
+          label: 'Acc\u00e9der \u00e0 l\u2019application',
           onPressed: () => context.go('/chat'),
         ),
       ],
