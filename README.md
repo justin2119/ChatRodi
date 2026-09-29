@@ -1,16 +1,30 @@
+<div align="center">
+
 # ChatRodi
 
-**RodiumAi multimodal BYOK chatbot** built with Flutter. ChatRodi provides an AI chat experience powered by the RodiumAi API, with user-managed API credentials and support for text, image, and video workflows.
+**RodiumAi multimodal BYOK chatbot** built with Flutter
 
-## Architecture Overview
+A focused AI chat experience for text, image, and video workflows, powered by the RodiumAi API and user-managed credentials.
 
-ChatRodi follows Clean Architecture to keep UI concerns, business rules, and external data access separated. MVVM and Riverpod organize presentation state and user interactions.
+[![Flutter](https://img.shields.io/badge/Flutter-FF6600?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev/)
+[![Dart](https://img.shields.io/badge/Dart-FF6600?style=for-the-badge&logo=dart&logoColor=white)](https://dart.dev/)
+[![Riverpod](https://img.shields.io/badge/Riverpod-FF6600?style=for-the-badge&logo=riverpod&logoColor=white)](https://riverpod.dev/)
+[![Supabase](https://img.shields.io/badge/Supabase-FF6600?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
+[![Dio](https://img.shields.io/badge/Dio-FF6600?style=for-the-badge&logoColor=white)](https://pub.dev/packages/dio)
+
+</div>
+
+## Overview
+
+ChatRodi is a multimodal chatbot with BYOK (bring your own key) credentials. It connects to the RodiumAi API for chat and media workflows. The Flutter app uses Clean Architecture, with MVVM and Riverpod organizing presentation state and user interactions.
+
+## Architecture
 
 | Layer | Responsibilities |
 | --- | --- |
 | **Presentation** | Flutter screens and widgets display conversations and accept user input. `ChatNotifier` exposes chat state and coordinates presentation actions using Riverpod. |
-| **Domain** | Chat entities, repository contracts, and use-case/business rules independent of Flutter and network implementation details. |
-| **Data** | Repository implementations, data sources, API request/response mapping, and integration with the RodiumAi service. |
+| **Domain** | Chat entities, repository contracts, and use-case/business rules independent from Flutter and network implementation details. |
+| **Data** | Repository implementations, data sources, API request/response mapping, and integration with RodiumAi. |
 
 ```mermaid
 flowchart TB
@@ -22,29 +36,9 @@ flowchart TB
   API --> RODIUM[RodiumAi API]
 ```
 
-Riverpod provides dependency/state management, while the repository boundary keeps the domain layer independent from Dio and the remote API.
+Riverpod provides dependency and state management. The repository boundary keeps domain logic independent from Dio and the remote API.
 
-## Project Structure
-
-The repository contains the Flutter application under `chat_rodi/`. The following tree summarizes the existing top-level structure and the architectural responsibilities described above; component names in the request flow are shown as logical roles.
-
-```text
-ChatRodi/
-├── README.md
-└── chat_rodi/
-    ├── .env.example
-    ├── pubspec.yaml
-    └── lib/
-        ├── main.dart
-        ├── core/       # Shared infrastructure and application-wide concerns
-        └── features/   # Feature modules, including chat
-            └── chat/
-                ├── presentation/  # Views, widgets, ChatNotifier (MVVM + Riverpod)
-                ├── domain/        # Entities, repository contract, business rules
-                └── data/          # ChatRepository, remote data source, DTOs
-```
-
-## Data and Request Flow
+## Request flow
 
 ```mermaid
 sequenceDiagram
@@ -70,7 +64,27 @@ sequenceDiagram
   UI-->>User: Display response
 ```
 
-## Tech Stack
+## Project structure
+
+The Flutter application lives in `chat_rodi/`. This tree summarizes its top-level layout and architectural responsibilities; component names in the request flow are shown as logical roles.
+
+```text
+ChatRodi/
+├── README.md
+└── chat_rodi/
+    ├── .env.example
+    ├── pubspec.yaml
+    └── lib/
+        ├── main.dart
+        ├── core/       # Shared infrastructure and application-wide concerns
+        └── features/   # Feature modules, including chat
+            └── chat/
+                ├── presentation/  # Views, widgets, ChatNotifier (MVVM + Riverpod)
+                ├── domain/        # Entities, repository contract, business rules
+                └── data/          # ChatRepository, remote data source, DTOs
+```
+
+## Tech stack
 
 | Area | Technology |
 | --- | --- |
@@ -79,24 +93,26 @@ sequenceDiagram
 | Architecture | Clean Architecture, MVVM |
 | HTTP client | Dio |
 | API | RodiumAi API (`/v1`) |
+| Backend SDK | Supabase Flutter (`supabase_flutter`) |
 | Environment configuration | `flutter_dotenv` |
 | Credential storage | `flutter_secure_storage` |
 | Routing | `go_router` |
 | Media input | `image_picker`, `file_picker` |
 | Typography | `google_fonts` |
 
-## Branding and Styling
+## Brand palette
 
-ChatRodi uses a dark, high-contrast interface with RodiumAi Emerald as its accent color.
+The README uses **Deep Orange (`#FF6600`)** as its documentation accent. The app palette below reflects the existing RodiumAi UI design tokens.
 
-| Design token | Hex value | Intended use |
-| --- | --- | --- |
-| Rodium Emerald | `#00C9A7` | Accent, primary actions, and success states |
-| Rodium Deep Slate | `#0F172A` | Dark backgrounds and navigation |
-| Rodium Surface | `#1E293B` | Cards, panels, and message surfaces |
-| Rodium Text | `#F8FAFC` | Primary text and headings |
+| Swatch | Design token | Hex | Intended use |
+| --- | --- | --- | --- |
+| ![#FF6600](https://placehold.co/24x24/FF6600/FF6600.png) | README Deep Orange | `#FF6600` | Badges and documentation highlights |
+| ![#00C9A7](https://placehold.co/24x24/00C9A7/00C9A7.png) | Rodium Emerald | `#00C9A7` | Accent, primary actions, and success states |
+| ![#0F172A](https://placehold.co/24x24/0F172A/0F172A.png) | Rodium Deep Slate | `#0F172A` | Dark backgrounds and navigation |
+| ![#1E293B](https://placehold.co/24x24/1E293B/1E293B.png) | Rodium Surface | `#1E293B` | Cards, panels, and message surfaces |
+| ![#F8FAFC](https://placehold.co/24x24/F8FAFC/F8FAFC.png) | Rodium Text | `#F8FAFC` | Primary text and headings |
 
-## Setup
+## Getting started
 
 ### Requirements
 
@@ -105,7 +121,7 @@ ChatRodi uses a dark, high-contrast interface with RodiumAi Emerald as its accen
 
 ### Configure environment
 
-1. From the repository root, enter the app directory:
+1. Enter the app directory:
 
    ```bash
    cd chat_rodi
