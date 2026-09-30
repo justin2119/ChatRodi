@@ -14,6 +14,7 @@ class ApiEndpoints {
   static String get chat => _env('RODIUM_CHAT_ENDPOINT', 'chat/completions');
   static String get image => _env('RODIUM_IMAGE_ENDPOINT', 'images/generations');
   static String get video => _env('RODIUM_VIDEO_ENDPOINT', 'videos/generations');
+  static String videoStatus(String taskId) => 'videos/$taskId';
   static String get models => _env('RODIUM_MODELS_ENDPOINT', 'models');
 
   static String _env(String key, String fallback) {
@@ -26,9 +27,7 @@ class ApiEndpoints {
   }
 }
 
-/// Client réseau centralisé pour les appels à l'API RodiumAi.
-/// Cette classe regroupe la configuration Dio et permet aux couches
-/// supérieures de dépendre d'un client unique, facile à remplacer en test.
+/// Client re\u0301seau centralise\u0301 pour les appels a\u0300 l'API RodiumAi.
 class ApiClient {
   const ApiClient(this._dio);
   final Dio _dio;
@@ -40,7 +39,6 @@ class ApiClient {
         ? (response.data as Map<String, dynamic>)['data']
         : null;
     if (data is! List) return const <String>[];
-
     return data
         .whereType<Map>()
         .map((model) => model['id'])
@@ -50,7 +48,6 @@ class ApiClient {
   }
 }
 
-/// Intercepteur chargé d'ajouter la clé BYOK à chaque requête.
 class _ByokAuthInterceptor extends Interceptor {
   _ByokAuthInterceptor(this._storageService);
   final ByokStorageService _storageService;
@@ -66,7 +63,7 @@ class _ByokAuthInterceptor extends Interceptor {
         return handler.reject(
           DioException(
             requestOptions: options,
-            error: 'Cl\\u00e9 API manquante. Veuillez configurer votre cl\\u00e9 BYOK.',
+            error: 'Cle\u0301 API manquante. Veuillez configurer votre cle\u0301 BYOK.',
           ),
         );
       }
@@ -79,7 +76,7 @@ class _ByokAuthInterceptor extends Interceptor {
           error: error,
           stackTrace: stackTrace,
           type: DioExceptionType.unknown,
-          message: 'Impossible de lire la clé API depuis le stockage sécurisé.',
+          message: 'Impossible de lire la cle\u0301 API depuis le stockage se\u0301curise\u0301.',
         ),
       );
     }
@@ -97,7 +94,6 @@ final dioProvider = Provider<Dio>((ref) {
       headers: const <String, dynamic>{'Accept': 'application/json'},
     ),
   );
-
   dio.interceptors.add(
     InterceptorsWrapper(
       onRequest: (options, handler) {

@@ -4,20 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/network/api_client.dart';
 import '../../domain/models/message_model.dart';
 
-/// Source distante responsable des requêtes HTTP de conversation.
-///
-/// Le client Dio provient du client API central afin de réutiliser
-/// configuration, délais d'attente et authentification BYOK.
 class ChatRemoteDataSource {
-  /// Construit la source avec l'instance réseau configurée.
   const ChatRemoteDataSource(this._dio);
-
   final Dio _dio;
 
-  /// Envoie le prompt et son contexte à l'API de complétion.
-  ///
-  /// Les médias locaux ne sont pas téléversés par cette implémentation ; le
-  /// paramètre est accepté pour respecter le contrat commun de la fonction.
   Future<MessageModel> sendMessage({
     required String prompt,
     required List<MessageModel> history,
@@ -32,7 +22,7 @@ class ChatRemoteDataSource {
       <String, dynamic>{'role': 'user', 'content': prompt},
     ];
     final response = await _dio.post<Map<String, dynamic>>(
-      'chat/completions',
+      ApiEndpoints.chat,
       data: <String, dynamic>{
         'model': model ?? 'default',
         'messages': messages,
@@ -40,20 +30,14 @@ class ChatRemoteDataSource {
       },
     );
     final data = response.data;
-    if (data == null) {
-      throw const FormatException('Réponse de chat vide.');
-    }
-
-    // Prend en charge le format usuel compatible OpenAI et un format direct.
+    if (data == null) throw const FormatException('Reponse de chat vide.');
     final choices = data['choices'] as List<dynamic>?;
     final choice = choices?.isNotEmpty == true
         ? choices!.first as Map<String, dynamic>
         : null;
     final message = choice?['message'] as Map<String, dynamic>?;
     final content = message?['content'] as String? ?? data['content'] as String?;
-    if (content == null) {
-      throw const FormatException('Contenu assistant absent de la réponse.');
-    }
+    if (content == null) throw const FormatException('Contenu assistant absent de la reponse.');
     return MessageModel(
       id: data['id'] as String? ?? DateTime.now().microsecondsSinceEpoch.toString(),
       content: content,
@@ -61,9 +45,39 @@ class ChatRemoteDataSource {
       timestamp: DateTime.now(),
     );
   }
+
+  Future<String> generateImage({
+    required String prompt,
+    String model = 'rodium-image-v1',
+  }) async {
+    final response = await _dio.post<Map<String, dynamic>>(
+      ApiEndpoints.image,
+      data: <String, dynamic>{'prompt': prompt, 'model': model, 'n': 1, 'size': '1024x1024'},
+    );
+    final data = response.data;
+    final entries = data?['data'] as List<dynamic>?;
+    final first = entries?.isNotEmpty == true ? entries!.first : null;
+    final image = first is Map ? first['url'] as String? : null;
+    final url = image ?? data?['url'] as String?;
+    if (url == null || url.isEmpty) throw const FormatException('Image URL absente de la reponse.');
+    return url;
+  }
+
+  Future<String> generateVideo({
+    required String prompt,
+    String model = 'rodium-video-v1',
+  }) async {
+    final response = await _dio.post<Map<String, dynamic>>(
+      ApiEndpoints.video,
+      data: <String, dynamic>{'prompt': prompt, 'model': model},
+    );
+    final data = response.data;
+    final taskId = data?['taskId'] as String? ?? data?['id'] as String?;
+    if (taskId == null || taskId.isEmpty) throw const FormatException('Identifiant de generation video absent.');
+    return taskId;
+  }
 }
 
-/// Fournisseur Riverpod de la source distante de conversation.
 final chatRemoteDataSourceProvider = Provider<ChatRemoteDataSource>((ref) {
   return ChatRemoteDataSource(ref.watch(apiClientProvider).dio);
 });

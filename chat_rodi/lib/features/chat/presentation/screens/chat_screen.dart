@@ -43,7 +43,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       drawer: const ChatDrawer(),
       body: Column(children: [
         Expanded(child: state.messages.isEmpty
-            ? Center(child: Text('Bonjour. Comment puis-je vous aider aujourd’hui ?', textAlign: TextAlign.center, style: TextStyle(color: colors.onSurfaceVariant, fontSize: 18)))
+            ? Center(child: Text('Bonjour. Comment puis-je vous aider aujourd\u2019hui ?', textAlign: TextAlign.center, style: TextStyle(color: colors.onSurfaceVariant, fontSize: 18)))
             : ListView.builder(padding: const EdgeInsets.all(16), itemCount: state.messages.length, itemBuilder: (context, index) => _MessageBubble(message: state.messages[index]))),
         if (state.errorMessage != null) Padding(padding: const EdgeInsets.all(8), child: Text(state.errorMessage!, style: TextStyle(color: colors.error))),
         SafeArea(top: false, child: Container(
@@ -89,17 +89,18 @@ class _MessageBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final attachmentPath = message.attachmentPath;
-    final networkUrl = message.mediaUrls?.isNotEmpty == true ? message.mediaUrls!.first : null;
+    final networkUrl = message.mediaUrl ?? (message.mediaUrls?.isNotEmpty == true ? message.mediaUrls!.first : null);
     final isLocalImage = message.attachmentType == 'image' && attachmentPath != null;
-    final ImageProvider? imageProvider = isLocalImage ? FileImage(File(attachmentPath)) : (networkUrl != null ? NetworkImage(networkUrl) : null);
+    final ImageProvider? imageProvider = isLocalImage ? FileImage(File(attachmentPath)) : (networkUrl != null && message.type != MessageType.video ? NetworkImage(networkUrl) : null);
     final maxWidth = MediaQuery.sizeOf(context).width * .82;
     return Align(alignment: message.role == MessageRole.user ? Alignment.centerRight : Alignment.centerLeft, child: Container(
       constraints: BoxConstraints(maxWidth: maxWidth), margin: const EdgeInsets.symmetric(vertical: 5), padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(color: colors.surface, borderRadius: BorderRadius.circular(17), border: Border.all(color: colors.outline)),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         if (imageProvider != null) Padding(padding: const EdgeInsets.only(bottom: 8), child: ClipRRect(borderRadius: BorderRadius.circular(12), child: GestureDetector(onTap: () => _showImage(context, imageProvider), child: Image(image: imageProvider, width: maxWidth - 24, height: 190, fit: BoxFit.cover)))),
+        if (message.type == MessageType.video && message.mediaUrl != null) Padding(padding: const EdgeInsets.only(bottom: 8), child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.movie_outlined, color: colors.primary), const SizedBox(width: 8), Flexible(child: Text('Video generation: ${message.mediaUrl}', style: TextStyle(color: colors.onSurface)))])),
         if (attachmentPath != null && !isLocalImage) Padding(padding: const EdgeInsets.only(bottom: 8), child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.insert_drive_file_outlined, color: colors.primary), const SizedBox(width: 8), Flexible(child: Text(attachmentPath.split(Platform.pathSeparator).last, style: TextStyle(color: colors.onSurface)))])),
-        if (message.content.isNotEmpty) Text(message.content, style: TextStyle(color: colors.onSurface, height: 1.45)),
+        if (message.content.isNotEmpty && message.type != MessageType.video) Text(message.content, style: TextStyle(color: colors.onSurface, height: 1.45)),
       ]),
     ));
   }
