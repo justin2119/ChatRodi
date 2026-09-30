@@ -11,7 +11,7 @@ class ChatState {
     this.messages = const <MessageModel>[],
     this.isLoading = false,
     this.errorMessage,
-    this.selectedModel = 'rodium-chat-v1',
+    this.selectedModel = 'claude-3-5-sonnet',
     this.selectedAttachmentPath,
     this.selectedAttachmentType,
   });
@@ -44,11 +44,14 @@ class ChatState {
 
 /// Coordinates conversation messages and always reads the model selected in Settings.
 class ChatViewModel extends StateNotifier<ChatState> {
-  ChatViewModel(this._repository, this._ref) : super(const ChatState());
+  ChatViewModel(this._repository, this._ref) : super(ChatState(selectedModel: _ref.read(defaultModelProvider)));
   final ChatRepository _repository;
   final Ref _ref;
 
-  void selectModel(String modelId) => state = state.copyWith(selectedModel: modelId);
+  void selectModel(String modelId) {
+    _ref.read(defaultModelProvider.notifier).state = modelId;
+    state = state.copyWith(selectedModel: modelId);
+  }
 
   void setAttachment(String path, {String? type}) => state = state.copyWith(
         selectedAttachmentPath: path,

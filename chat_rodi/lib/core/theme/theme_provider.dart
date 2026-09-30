@@ -13,5 +13,5 @@ class ThemeModeNotifier extends StateNotifier<ThemeMode> {
 }
 
 /// Settings for model and generation controls, kept in Riverpod app state.
-final defaultModelProvider = StateProvider<String>((ref) => 'rodium-chat-v1');
+final defaultModelProvider = StateProvider<String>((ref) => 'claude-3-5-sonnet');
 final temperatureProvider = StateProvider<double>((ref) => 0.7);
