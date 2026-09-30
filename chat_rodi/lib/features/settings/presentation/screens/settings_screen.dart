@@ -3,9 +3,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../../core/network/api_client.dart';
 import '../../../../core/theme/theme_provider.dart';
 
 const _fallbackModel = 'rodium-chat-v1';
+
+final availableModelsProvider = FutureProvider<List<String>>((ref) async {
+  try {
+    final models = await ref.watch(apiClientProvider).getModels();
+    return models.isNotEmpty ? models : const <String>[_fallbackModel];
+  } catch (_) {
+    return const <String>[_fallbackModel];
+  }
+});
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -14,13 +24,11 @@ class SettingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeProvider);
     final selectedModel = ref.watch(defaultModelProvider);
-    final model = selectedModel.trim().isEmpty || selectedModel == 'Auto'
-        ? _fallbackModel
-        : selectedModel;
+    final modelsAsync = ref.watch(availableModelsProvider);
     final temperature = ref.watch(temperatureProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Param\u00e8tres')),
+      appBar: AppBar(title: const Text('Param\\u00e8tres')),
       body: ListView(
         padding: const EdgeInsets.all(18),
         children: [
@@ -32,8 +40,8 @@ class SettingsScreen extends ConsumerWidget {
                 final user = snapshot.data?.session?.user ?? Supabase.instance.client.auth.currentUser;
                 return ListTile(
                   leading: Icon(user == null ? Icons.person_outline : Icons.verified_user_outlined, color: const Color(0xFFFF6600)),
-                  title: Text(user?.email ?? 'Non connect\u00e9'),
-                  subtitle: Text(user == null ? 'Acc\u00e8s invit\u00e9' : 'Compte connect\u00e9'),
+                  title: Text(user?.email ?? 'Non connect\\u00e9'),
+                  subtitle: Text(user == null ? 'Acc\\u00e8s invit\\u00e9' : 'Compte connect\\u00e9'),
                   trailing: ElevatedButton(
                     onPressed: () async {
                       if (user == null) {
@@ -47,16 +55,16 @@ class SettingsScreen extends ConsumerWidget {
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
                     ),
-                    child: Text(user == null ? 'Se connecter' : 'Se d\u00e9connecter'),
+                    child: Text(user == null ? 'Se connecter' : 'Se d\\u00e9connecter'),
                   ),
                 );
               },
             ),
           ]),
-          _Section(title: 'G\u00e9n\u00e9ral', children: [
+          _Section(title: 'G\\u00e9n\\u00e9ral', children: [
             ListTile(
               leading: const Icon(Icons.palette_outlined),
-              title: const Text('Th\u00e8me'),
+              title: const Text('Th\\u00e8me'),
               subtitle: Text(_themeLabel(themeMode)),
               trailing: DropdownButton<ThemeMode>(
                 value: themeMode,
@@ -64,7 +72,7 @@ class SettingsScreen extends ConsumerWidget {
                 items: const [
                   DropdownMenuItem(value: ThemeMode.dark, child: Text('Sombre')),
                   DropdownMenuItem(value: ThemeMode.light, child: Text('Clair')),
-                  DropdownMenuItem(value: ThemeMode.system, child: Text('Syst\u00e8me')),
+                  DropdownMenuItem(value: ThemeMode.system, child: Text('Syst\\u00e8me')),
                 ],
                 onChanged: (value) {
                   if (value != null) ref.read(themeModeProvider.notifier).setThemeMode(value);
@@ -72,17 +80,44 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
           ]),
-          _Section(title: 'Mod\u00e8le & IA', children: [
-            ListTile(
-              leading: const Icon(Icons.smart_toy_outlined),
-              title: const Text('Mod\u00e8le par d\u00e9faut'),
-              subtitle: Text(model),
-              trailing: const Icon(Icons.edit_outlined),
-              onTap: () => _editModel(context, ref, model),
+          _Section(title: 'Mod\\u00e8le & IA', children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: modelsAsync.when(
+                loading: () => InputDecorator(
+                  decoration: const InputDecoration(labelText: 'Mod\\u00e8le par d\\u00e9faut'),
+                  child: Text(selectedModel),
+                ),
+                error: (_, __) => DropdownButtonFormField<String>(
+                  value: _fallbackModel,
+                  decoration: const InputDecoration(labelText: 'Mod\\u00e8le par d\\u00e9faut'),
+                  items: const [DropdownMenuItem(value: _fallbackModel, child: Text(_fallbackModel))],
+                  onChanged: (value) {
+                    if (value != null) ref.read(defaultModelProvider.notifier).state = value;
+                  },
+                ),
+                data: (models) {
+                  final options = models.isEmpty ? const <String>[_fallbackModel] : models;
+                  final value = options.contains(selectedModel) ? selectedModel : options.first;
+                  if (value != selectedModel) {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      ref.read(defaultModelProvider.notifier).state = value;
+                    });
+                  }
+                  return DropdownButtonFormField<String>(
+                    value: value,
+                    decoration: const InputDecoration(labelText: 'Mod\\u00e8le par d\\u00e9faut'),
+                    items: options.map((model) => DropdownMenuItem(value: model, child: Text(model))).toList(),
+                    onChanged: (model) {
+                      if (model != null) ref.read(defaultModelProvider.notifier).state = model;
+                    },
+                  );
+                },
+              ),
             ),
             ListTile(
               leading: const Icon(Icons.tune),
-              title: const Text('Temp\u00e9rature'),
+              title: const Text('Temp\\u00e9rature'),
               subtitle: Text(temperature.toStringAsFixed(1)),
             ),
             Padding(
@@ -97,16 +132,16 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
           ]),
-          _Section(title: 'S\u00e9curit\u00e9 & Cl\u00e9 API', children: [
+          _Section(title: 'S\\u00e9curit\\u00e9 & Cl\\u00e9 API', children: [
             ListTile(
               leading: const Icon(Icons.key_outlined),
-              title: const Text('Cl\u00e9 API (BYOK)'),
-              subtitle: const Text('Consulter le statut ou modifier la cl\u00e9 enregistr\u00e9e'),
+              title: const Text('Cl\\u00e9 API (BYOK)'),
+              subtitle: const Text('Consulter le statut ou modifier la cl\\u00e9 enregistr\\u00e9e'),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => context.go('/'),
             ),
           ]),
-          _Section(title: '\u00c0 propos & Version', children: const [
+          _Section(title: '\\u00c0 propos & Version', children: const [
             ListTile(
               leading: Icon(Icons.info_outline),
               title: Text('ChatRodi'),
@@ -121,40 +156,8 @@ class SettingsScreen extends ConsumerWidget {
   static String _themeLabel(ThemeMode mode) => switch (mode) {
         ThemeMode.dark => 'Sombre',
         ThemeMode.light => 'Clair',
-        ThemeMode.system => 'Syst\u00e8me',
+        ThemeMode.system => 'Syst\\u00e8me',
       };
-
-  static Future<void> _editModel(BuildContext context, WidgetRef ref, String current) async {
-    final controller = TextEditingController(text: current == 'Auto' ? _fallbackModel : current);
-    final value = await showDialog<String>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Mod\u00e8le par d\u00e9faut'),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(
-            labelText: 'Identifiant du mod\u00e8le',
-            hintText: _fallbackModel,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Annuler'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(dialogContext, controller.text.trim()),
-            child: const Text('Enregistrer'),
-          ),
-        ],
-      ),
-    );
-    controller.dispose();
-    if (value != null) {
-      ref.read(defaultModelProvider.notifier).state =
-          value.isEmpty || value == 'Auto' ? _fallbackModel : value;
-    }
-  }
 }
 
 class _Section extends StatelessWidget {

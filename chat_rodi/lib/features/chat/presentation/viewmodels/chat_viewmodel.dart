@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/theme/theme_provider.dart';
 import '../../data/repositories/chat_repository_impl.dart';
 import '../../domain/models/message_model.dart';
 import '../../domain/repositories/chat_repository.dart';
@@ -10,7 +11,7 @@ class ChatState {
     this.messages = const <MessageModel>[],
     this.isLoading = false,
     this.errorMessage,
-    this.selectedModel = 'Gemini 3.7 Flash',
+    this.selectedModel = 'rodium-chat-v1',
     this.selectedAttachmentPath,
     this.selectedAttachmentType,
   });
@@ -41,10 +42,11 @@ class ChatState {
       );
 }
 
-/// Coordinates conversation messages and the active model.
+/// Coordinates conversation messages and always reads the model selected in Settings.
 class ChatViewModel extends StateNotifier<ChatState> {
-  ChatViewModel(this._repository) : super(const ChatState());
+  ChatViewModel(this._repository, this._ref) : super(const ChatState());
   final ChatRepository _repository;
+  final Ref _ref;
 
   void selectModel(String modelId) => state = state.copyWith(selectedModel: modelId);
 
@@ -55,12 +57,13 @@ class ChatViewModel extends StateNotifier<ChatState> {
 
   void clearAttachment() => state = state.copyWith(clearAttachment: true);
 
-  void newConversation() => state = ChatState(selectedModel: state.selectedModel);
+  void newConversation() => state = ChatState(selectedModel: _ref.read(defaultModelProvider));
 
   Future<void> sendMessage(String content) async {
     final prompt = content.trim();
     final attachmentPath = state.selectedAttachmentPath;
     final attachmentType = state.selectedAttachmentType;
+    final model = _ref.read(defaultModelProvider);
     if ((prompt.isEmpty && attachmentPath == null) || state.isLoading) return;
     final now = DateTime.now();
     final userMessage = MessageModel(
@@ -75,6 +78,7 @@ class ChatViewModel extends StateNotifier<ChatState> {
     state = state.copyWith(
       messages: <MessageModel>[...previousMessages, userMessage],
       isLoading: true,
+      selectedModel: model,
       clearError: true,
       clearAttachment: true,
     );
@@ -82,15 +86,15 @@ class ChatViewModel extends StateNotifier<ChatState> {
       final answer = await _repository.sendMessage(
         prompt: prompt,
         history: previousMessages,
-        model: state.selectedModel,
+        model: model,
       );
       state = state.copyWith(messages: <MessageModel>[...state.messages, answer], isLoading: false);
     } catch (error) {
-      state = state.copyWith(isLoading: false, errorMessage: 'Impossible d’envoyer le message : $error');
+      state = state.copyWith(isLoading: false, errorMessage: 'Impossible d\\u2019envoyer le message : $error');
     }
   }
 }
 
 final chatViewModelProvider = StateNotifierProvider<ChatViewModel, ChatState>(
-  (ref) => ChatViewModel(ref.watch(chatRepositoryProvider)),
+  (ref) => ChatViewModel(ref.watch(chatRepositoryProvider), ref),
 );
