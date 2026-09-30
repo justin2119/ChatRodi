@@ -32,6 +32,7 @@ class ApiEndpoints {
 class ApiClient {
   const ApiClient(this._dio);
   final Dio _dio;
+  Dio get dio => _dio;
 
   Future<List<String>> getModels() async {
     final response = await _dio.get(ApiEndpoints.models);
