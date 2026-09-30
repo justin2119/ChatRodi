@@ -30,8 +30,23 @@ class ApiEndpoints {
 /// Cette classe regroupe la configuration Dio et permet aux couches
 /// supérieures de dépendre d'un client unique, facile à remplacer en test.
 class ApiClient {
-  const ApiClient(this.dio);
-  final Dio dio;
+  const ApiClient(this._dio);
+  final Dio _dio;
+
+  Future<List<String>> getModels() async {
+    final response = await _dio.get(ApiEndpoints.models);
+    final data = response.data is Map<String, dynamic>
+        ? (response.data as Map<String, dynamic>)['data']
+        : null;
+    if (data is! List) return const <String>[];
+
+    return data
+        .whereType<Map>()
+        .map((model) => model['id'])
+        .whereType<String>()
+        .where((id) => id.trim().isNotEmpty)
+        .toList(growable: false);
+  }
 }
 
 /// Intercepteur chargé d'ajouter la clé BYOK à chaque requête.

@@ -5,15 +5,19 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/theme/theme_provider.dart';
 
+const _fallbackModel = 'rodium-chat-v1';
+
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeProvider);
-    final model = ref.watch(defaultModelProvider);
+    final selectedModel = ref.watch(defaultModelProvider);
+    final model = selectedModel.trim().isEmpty || selectedModel == 'Auto'
+        ? _fallbackModel
+        : selectedModel;
     final temperature = ref.watch(temperatureProvider);
-    final colors = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Param\u00e8tres')),
@@ -121,7 +125,7 @@ class SettingsScreen extends ConsumerWidget {
       };
 
   static Future<void> _editModel(BuildContext context, WidgetRef ref, String current) async {
-    final controller = TextEditingController(text: current == 'Auto' ? '' : current);
+    final controller = TextEditingController(text: current == 'Auto' ? _fallbackModel : current);
     final value = await showDialog<String>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -130,7 +134,7 @@ class SettingsScreen extends ConsumerWidget {
           controller: controller,
           decoration: const InputDecoration(
             labelText: 'Identifiant du mod\u00e8le',
-            hintText: 'Auto',
+            hintText: _fallbackModel,
           ),
         ),
         actions: [
@@ -147,7 +151,8 @@ class SettingsScreen extends ConsumerWidget {
     );
     controller.dispose();
     if (value != null) {
-      ref.read(defaultModelProvider.notifier).state = value.isEmpty ? 'Auto' : value;
+      ref.read(defaultModelProvider.notifier).state =
+          value.isEmpty || value == 'Auto' ? _fallbackModel : value;
     }
   }
 }
