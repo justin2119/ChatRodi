@@ -18,7 +18,7 @@ Future<void> showAttachmentMenu(BuildContext context) => showModalBottomSheet<vo
       const SizedBox(height: 14),
       _Action(icon: Icons.photo_library_outlined, title: 'Image / Photo', subtitle: 'Choisir dans la galerie', onTap: () => Navigator.pop(context, 'gallery')),
       _Action(icon: Icons.description_outlined, title: 'Document / Fichier', subtitle: 'Parcourir les fichiers', onTap: () => Navigator.pop(context, 'file')),
-      _Action(icon: Icons.camera_alt_outlined, title: 'Cam\u00e9ra', subtitle: 'Prendre une photo', onTap: () => Navigator.pop(context, 'camera')),
+      _Action(icon: Icons.camera_alt_outlined, title: 'Caméra', subtitle: 'Prendre une photo', onTap: () => Navigator.pop(context, 'camera')),
       _Action(icon: Icons.code_rounded, title: 'Code / Snippet', subtitle: 'Ajouter un extrait de code', onTap: () => Navigator.pop(context, 'code')),
     ]),
   )),

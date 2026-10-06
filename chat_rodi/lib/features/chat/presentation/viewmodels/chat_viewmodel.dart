@@ -121,7 +121,7 @@ class ChatViewModel extends StateNotifier<ChatState> {
         state = state.copyWith(messages: <MessageModel>[...state.messages, answer], isLoading: false);
       }
     } catch (error) {
-      state = state.copyWith(isLoading: false, errorMessage: 'Impossible d\\u2019envoyer le message : $error');
+      state = state.copyWith(isLoading: false, errorMessage: 'Impossible d’envoyer le message : $error');
     }
   }
 }
