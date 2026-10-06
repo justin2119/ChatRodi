@@ -4,9 +4,11 @@ import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/network/api_client.dart';
+import '../../../../core/security/byok_storage_service.dart';
 import '../../../../core/theme/theme_provider.dart';
 
 const _fallbackModel = 'rodium-chat-v1';
+const _brandOrange = Color(0xFFFF6600);
 
 final availableModelsProvider = FutureProvider<List<String>>((ref) async {
   try {
@@ -15,6 +17,10 @@ final availableModelsProvider = FutureProvider<List<String>>((ref) async {
   } catch (_) {
     return const <String>[_fallbackModel];
   }
+});
+
+final byokApiKeyProvider = FutureProvider<String?>((ref) async {
+  return ref.watch(byokStorageServiceProvider).getApiKey();
 });
 
 class SettingsScreen extends ConsumerWidget {
@@ -39,7 +45,7 @@ class SettingsScreen extends ConsumerWidget {
               builder: (context, snapshot) {
                 final user = snapshot.data?.session?.user ?? Supabase.instance.client.auth.currentUser;
                 return ListTile(
-                  leading: Icon(user == null ? Icons.person_outline : Icons.verified_user_outlined, color: const Color(0xFFFF6600)),
+                  leading: Icon(user == null ? Icons.person_outline : Icons.verified_user_outlined, color: _brandOrange),
                   title: Text(user?.email ?? 'Non connecté'),
                   subtitle: Text(user == null ? 'Accès invité' : 'Compte connecté'),
                   trailing: ElevatedButton(
@@ -51,7 +57,7 @@ class SettingsScreen extends ConsumerWidget {
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFF6600),
+                      backgroundColor: _brandOrange,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
                     ),
@@ -132,14 +138,8 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
           ]),
-          _Section(title: 'Sécurité & Clé API', children: [
-            ListTile(
-              leading: const Icon(Icons.key_outlined),
-              title: const Text('Clé API (BYOK)'),
-              subtitle: const Text('Consulter le statut ou modifier la clé enregistrée'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => context.go('/'),
-            ),
+          _Section(title: 'Sécurité & Clé API', children: const [
+            _ApiKeyManagement(),
           ]),
           _Section(title: 'À propos & Version', children: const [
             ListTile(
@@ -158,6 +158,199 @@ class SettingsScreen extends ConsumerWidget {
         ThemeMode.light => 'Clair',
         ThemeMode.system => 'Système',
       };
+}
+
+class _ApiKeyManagement extends ConsumerStatefulWidget {
+  const _ApiKeyManagement();
+
+  @override
+  ConsumerState<_ApiKeyManagement> createState() => _ApiKeyManagementState();
+}
+
+class _ApiKeyManagementState extends ConsumerState<_ApiKeyManagement> {
+  bool _showKey = false;
+  bool _busy = false;
+
+  Future<void> _editKey() async {
+    final key = await showDialog<String>(
+      context: context,
+      builder: (_) => const _EditApiKeyDialog(),
+    );
+    if (key == null || !mounted) return;
+    setState(() => _busy = true);
+    try {
+      await ref.read(byokStorageServiceProvider).saveApiKey(key);
+      ref.invalidate(byokApiKeyProvider);
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Clé mise à jour avec succès')),
+      );
+    } catch (_) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Impossible d’enregistrer la clé API.')),
+      );
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _revokeKey() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Révoquer la clé API ?'),
+        content: const Text('La clé enregistrée sera supprimée de cet appareil. Cette action est irréversible.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Annuler')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _brandOrange,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
+            ),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Révoquer'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    setState(() => _busy = true);
+    try {
+      await ref.read(byokStorageServiceProvider).deleteApiKey();
+      ref.invalidate(byokApiKeyProvider);
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Clé révoquée')),
+      );
+    } catch (_) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Impossible de supprimer la clé API.')),
+      );
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final keyAsync = ref.watch(byokApiKeyProvider);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        Text('Gestion de la clé API', style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 10),
+        keyAsync.when(
+          loading: () => const LinearProgressIndicator(color: _brandOrange),
+          error: (_, __) => const Text('Impossible de lire la clé enregistrée.'),
+          data: (key) => Row(children: [
+            Expanded(
+              child: InputDecorator(
+                decoration: const InputDecoration(labelText: 'Clé API BYOK'),
+                child: Text(key == null || key.isEmpty
+                    ? 'Aucune clé enregistrée'
+                    : _showKey ? key : '••••••••••••••••'),
+              ),
+            ),
+            if (key != null && key.isNotEmpty)
+              IconButton(
+                tooltip: _showKey ? 'Masquer la clé' : 'Afficher la clé',
+                onPressed: () => setState(() => _showKey = !_showKey),
+                icon: Icon(_showKey ? Icons.visibility_off_outlined : Icons.visibility_outlined),
+              ),
+          ]),
+        ),
+        const SizedBox(height: 12),
+        Wrap(spacing: 10, runSpacing: 8, children: [
+          ElevatedButton.icon(
+            onPressed: _busy ? null : _editKey,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _brandOrange,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
+            ),
+            icon: const Icon(Icons.edit_outlined),
+            label: Text(keyAsync.valueOrNull == null ? 'Ajouter une clé' : 'Modifier la clé'),
+          ),
+          if (keyAsync.valueOrNull?.isNotEmpty == true)
+            OutlinedButton.icon(
+              onPressed: _busy ? null : _revokeKey,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: _brandOrange,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
+              ),
+              icon: const Icon(Icons.delete_outline),
+              label: const Text('Révoquer'),
+            ),
+        ]),
+        if (_busy) const Padding(
+          padding: EdgeInsets.only(top: 8),
+          child: LinearProgressIndicator(color: _brandOrange),
+        ),
+      ]),
+    );
+  }
+}
+
+class _EditApiKeyDialog extends StatefulWidget {
+  const _EditApiKeyDialog();
+
+  @override
+  State<_EditApiKeyDialog> createState() => _EditApiKeyDialogState();
+}
+
+class _EditApiKeyDialogState extends State<_EditApiKeyDialog> {
+  final _formKey = GlobalKey<FormState>();
+  final _controller = TextEditingController();
+  bool _obscure = true;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AlertDialog(
+        title: const Text('Clé API BYOK'),
+        content: Form(
+          key: _formKey,
+          child: TextFormField(
+            controller: _controller,
+            obscureText: _obscure,
+            autofocus: true,
+            autocorrect: false,
+            enableSuggestions: false,
+            decoration: InputDecoration(
+              labelText: 'Nouvelle clé API',
+              suffixIcon: IconButton(
+                tooltip: _obscure ? 'Afficher la clé' : 'Masquer la clé',
+                onPressed: () => setState(() => _obscure = !_obscure),
+                icon: Icon(_obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined),
+              ),
+            ),
+            validator: (value) {
+              if (value == null || value.trim().isEmpty) return 'Saisissez une clé API.';
+              if (value.trim().length < 8) return 'La clé doit contenir au moins 8 caractères.';
+              return null;
+            },
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Annuler')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _brandOrange,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
+            ),
+            onPressed: () {
+              if (_formKey.currentState!.validate()) {
+                Navigator.pop(context, _controller.text.trim());
+              }
+            },
+            child: const Text('Enregistrer'),
+          ),
+        ],
+      );
 }
 
 class _Section extends StatelessWidget {
