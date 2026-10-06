@@ -43,7 +43,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       drawer: const ChatDrawer(),
       body: Column(children: [
         Expanded(child: state.messages.isEmpty
-            ? Center(child: Text('Bonjour. Comment puis-je vous aider aujourd\u2019hui ?', textAlign: TextAlign.center, style: TextStyle(color: colors.onSurfaceVariant, fontSize: 18)))
+            ? Center(child: Text('Bonjour. Comment puis-je vous aider aujourd’hui ?', textAlign: TextAlign.center, style: TextStyle(color: colors.onSurfaceVariant, fontSize: 18)))
             : ListView.builder(padding: const EdgeInsets.all(16), itemCount: state.messages.length, itemBuilder: (context, index) => _MessageBubble(message: state.messages[index]))),
         if (state.errorMessage != null) Padding(padding: const EdgeInsets.all(8), child: Text(state.errorMessage!, style: TextStyle(color: colors.error))),
         SafeArea(top: false, child: Container(
@@ -74,7 +74,7 @@ class _AttachmentPreview extends StatelessWidget {
     return Container(height: 82, width: double.infinity, margin: const EdgeInsets.only(bottom: 10), padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: colors.surface, border: Border.all(color: colors.outline), borderRadius: BorderRadius.circular(14)), child: Row(children: [
       ClipRRect(borderRadius: BorderRadius.circular(9), child: type == 'image' ? Image.file(File(path), width: 64, height: 64, fit: BoxFit.cover) : Container(width: 64, height: 64, color: colors.surfaceContainerHighest, child: Icon(Icons.description_outlined, color: const Color(0xFFFF6600)))),
       const SizedBox(width: 12), Expanded(child: Text(path.split(Platform.pathSeparator).last, maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(color: colors.onSurface))),
-      IconButton(onPressed: onRemove, tooltip: 'Supprimer la pi\\u00e8ce jointe', icon: Icon(Icons.close_rounded, color: colors.onSurfaceVariant)),
+      IconButton(onPressed: onRemove, tooltip: 'Supprimer la pièce jointe', icon: Icon(Icons.close_rounded, color: colors.onSurfaceVariant)),
     ]));
   }
 }
