@@ -30,7 +30,7 @@ class ChatDrawer extends StatelessWidget {
                 children: [
                   CircleAvatar(radius: 25, backgroundColor: _surface, child: const Icon(Icons.person_outline, color: Colors.white, size: 27)),
                   const SizedBox(width: 12),
-                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(user?.email ?? 'Invit\u00e9', style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600), maxLines: 1, overflow: TextOverflow.ellipsis), const SizedBox(height: 3), Text(user == null ? 'Non connect\u00e9' : 'Compte connect\u00e9', style: const TextStyle(color: _muted, fontSize: 12))])),
+                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(user?.email ?? 'Invité', style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600), maxLines: 1, overflow: TextOverflow.ellipsis), const SizedBox(height: 3), Text(user == null ? 'Non connecté' : 'Compte connecté', style: const TextStyle(color: _muted, fontSize: 12))])),
                   const Icon(Icons.more_horiz, color: _muted),
                 ],
               ),
@@ -50,7 +50,7 @@ class ChatDrawer extends StatelessWidget {
                 child: SizedBox(height: 44, child: OutlinedButton(
                   onPressed: () async { await Supabase.instance.client.auth.signOut(); if (context.mounted) router.pop(); },
                   style: OutlinedButton.styleFrom(foregroundColor: _orange, side: const BorderSide(color: _orange), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50))),
-                  child: const Text('Se d\u00e9connecter'),
+                  child: const Text('Se déconnecter'),
                 )),
               ),
             Padding(
@@ -70,17 +70,17 @@ class ChatDrawer extends StatelessWidget {
                 _conversation(context, 'Explication Physique Chimie'),
                 _conversation(context, 'Architecture Supabase'),
                 const Padding(padding: EdgeInsets.fromLTRB(10, 23, 10, 10), child: Text('NAVIGATION', style: TextStyle(color: _muted, fontSize: 11, fontWeight: FontWeight.w600, letterSpacing: .8))),
-                _navItem(context, currentLocation, Icons.widgets_outlined, 'Mod\u00e8les', AppRoutes.modelSelection),
+                _navItem(context, currentLocation, Icons.widgets_outlined, 'Modèles', AppRoutes.modelSelection),
                 _navItem(context, currentLocation, Icons.bar_chart_rounded, 'Utilisation', AppRoutes.usage),
-                _navItem(context, currentLocation, Icons.key_outlined, 'Cl\u00e9 API', AppRoutes.byok),
-                _navItem(context, currentLocation, Icons.settings_outlined, 'Param\u00e8tres', AppRoutes.settings),
+                _navItem(context, currentLocation, Icons.key_outlined, 'Clé API', AppRoutes.byok),
+                _navItem(context, currentLocation, Icons.settings_outlined, 'Paramètres', AppRoutes.settings),
                 ListTile(dense: true, leading: const Icon(Icons.help_outline, color: _muted, size: 20), title: const Text('Aide & support', style: TextStyle(color: Colors.white, fontSize: 14)), onTap: () {
                   showDialog<void>(context: context, builder: (dialogContext) => AlertDialog(backgroundColor: _surface, title: const Text('Aide & support', style: TextStyle(color: Colors.white)), content: const Text('Besoin d’aide ? Contactez notre equipe de support.', style: TextStyle(color: _muted)), actions: [TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Fermer', style: TextStyle(color: _orange)))]));
                 }),
-                _navItem(context, currentLocation, Icons.info_outline, '\u00c0 propos', AppRoutes.about),
+                _navItem(context, currentLocation, Icons.info_outline, 'À propos', AppRoutes.about),
               ],
             )),
-            Container(margin: const EdgeInsets.fromLTRB(16, 8, 16, 14), padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: _surface, borderRadius: BorderRadius.circular(14)), child: const Row(children: [Icon(Icons.auto_awesome, color: _orange, size: 23), SizedBox(width: 10), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('RodiumAi', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)), SizedBox(height: 3), Text('Plus de 100 mod\u00e8les. Une seule API.', style: TextStyle(color: _muted, fontSize: 11))]))])),
+            Container(margin: const EdgeInsets.fromLTRB(16, 8, 16, 14), padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: _surface, borderRadius: BorderRadius.circular(14)), child: const Row(children: [Icon(Icons.auto_awesome, color: _orange, size: 23), SizedBox(width: 10), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('RodiumAi', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)), SizedBox(height: 3), Text('Plus de 100 modèles. Une seule API.', style: TextStyle(color: _muted, fontSize: 11))]))])),
           ],
         ),
       ),
