@@ -36,7 +36,7 @@ class ApiClient {
   Future<RodiumAIClient> get rodiumClient async {
     final apiKey = await _storageService.getApiKey();
     if (apiKey == null || apiKey.isEmpty) {
-      throw StateError('Cl\u00e9 API manquante. Veuillez configurer votre cl\u00e9 BYOK.');
+      throw StateError('Clé API manquante. Veuillez configurer votre clé BYOK.');
     }
     return RodiumAIClient(apiKey: apiKey, locale: 'fr');
   }
@@ -68,7 +68,7 @@ class _ByokAuthInterceptor extends Interceptor {
         return handler.reject(
           DioException(
             requestOptions: options,
-            error: 'Cl\u00e9 API manquante. Veuillez configurer votre cl\u00e9 BYOK.',
+            error: 'Clé API manquante. Veuillez configurer votre clé BYOK.',
           ),
         );
       }
@@ -81,7 +81,7 @@ class _ByokAuthInterceptor extends Interceptor {
           error: error,
           stackTrace: stackTrace,
           type: DioExceptionType.unknown,
-          message: 'Impossible de lire la cl\u00e9 API depuis le stockage s\u00e9curis\u00e9.',
+          message: 'Impossible de lire la clé API depuis le stockage sécurisé.',
         ),
       );
     }
