@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:rodiumai/rodiumai.dart';
 
 import '../security/byok_storage_service.dart';
 
@@ -11,11 +12,8 @@ class ApiEndpoints {
     return url.endsWith('/') ? url : '$url/';
   }
 
-  static String get chat => _env('RODIUM_CHAT_ENDPOINT', 'chat/completions');
   static String get image => _env('RODIUM_IMAGE_ENDPOINT', 'images/generations');
   static String get video => _env('RODIUM_VIDEO_ENDPOINT', 'videos/generations');
-  static String videoStatus(String taskId) => 'videos/$taskId';
-  static String get models => _env('RODIUM_MODELS_ENDPOINT', 'models');
 
   static String _env(String key, String fallback) {
     try {
@@ -27,21 +25,28 @@ class ApiEndpoints {
   }
 }
 
-/// Client re\u0301seau centralise\u0301 pour les appels a\u0300 l'API RodiumAi.
+/// Owns both the SDK client (text/model APIs) and Dio (media generation).
 class ApiClient {
-  const ApiClient(this._dio);
+  const ApiClient(this._dio, this._storageService);
   final Dio _dio;
+  final ByokStorageService _storageService;
+
   Dio get dio => _dio;
 
+  Future<RodiumAIClient> get rodiumClient async {
+    final apiKey = await _storageService.getApiKey();
+    if (apiKey == null || apiKey.isEmpty) {
+      throw StateError('Cle\\u0301 API manquante. Veuillez configurer votre cle\\u0301 BYOK.');
+    }
+    return RodiumAIClient(apiKey: apiKey, locale: 'fr');
+  }
+
   Future<List<String>> getModels() async {
-    final response = await _dio.get(ApiEndpoints.models);
-    final data = response.data is Map<String, dynamic>
-        ? (response.data as Map<String, dynamic>)['data']
-        : null;
-    if (data is! List) return const <String>[];
-    return data
-        .whereType<Map>()
-        .map((model) => model['id'])
+    final collection = await (await rodiumClient).models();
+    final dynamic entries = (collection as dynamic).data;
+    if (entries is! Iterable) return const <String>[];
+    return entries
+        .map((dynamic model) => (model as dynamic).id)
         .whereType<String>()
         .where((id) => id.trim().isNotEmpty)
         .toList(growable: false);
@@ -63,7 +68,7 @@ class _ByokAuthInterceptor extends Interceptor {
         return handler.reject(
           DioException(
             requestOptions: options,
-            error: 'Cle\u0301 API manquante. Veuillez configurer votre cle\u0301 BYOK.',
+            error: 'Cle\\u0301 API manquante. Veuillez configurer votre cle\\u0301 BYOK.',
           ),
         );
       }
@@ -76,7 +81,7 @@ class _ByokAuthInterceptor extends Interceptor {
           error: error,
           stackTrace: stackTrace,
           type: DioExceptionType.unknown,
-          message: 'Impossible de lire la cle\u0301 API depuis le stockage se\u0301curise\u0301.',
+          message: 'Impossible de lire la cle\\u0301 API depuis le stockage se\\u0301curise\\u0301.',
         ),
       );
     }
@@ -94,18 +99,10 @@ final dioProvider = Provider<Dio>((ref) {
       headers: const <String, dynamic>{'Accept': 'application/json'},
     ),
   );
-  dio.interceptors.add(
-    InterceptorsWrapper(
-      onRequest: (options, handler) {
-        print('[DIO REQUEST] ${options.baseUrl}${options.path}');
-        return handler.next(options);
-      },
-    ),
-  );
   dio.interceptors.add(_ByokAuthInterceptor(storageService));
   return dio;
 });
 
 final apiClientProvider = Provider<ApiClient>((ref) {
-  return ApiClient(ref.watch(dioProvider));
+  return ApiClient(ref.watch(dioProvider), ref.watch(byokStorageServiceProvider));
 });

@@ -5,8 +5,19 @@ import '../../../../core/network/api_client.dart';
 import '../../domain/models/message_model.dart';
 
 class ChatRemoteDataSource {
-  const ChatRemoteDataSource(this._dio);
-  final Dio _dio;
+  const ChatRemoteDataSource(this._apiClient);
+  final ApiClient _apiClient;
+
+  List<Map<String, String>> _messages({
+    required String prompt,
+    required List<MessageModel> history,
+  }) => <Map<String, String>>[
+        ...history.map((message) => <String, String>{
+              'role': message.role.name,
+              'content': message.content,
+            }),
+        <String, String>{'role': 'user', 'content': prompt},
+      ];
 
   Future<MessageModel> sendMessage({
     required String prompt,
@@ -14,43 +25,46 @@ class ChatRemoteDataSource {
     String? model,
     List<String>? mediaPaths,
   }) async {
-    final messages = <Map<String, dynamic>>[
-      ...history.map((message) => <String, dynamic>{
-            'role': message.role.name,
-            'content': message.content,
-          }),
-      <String, dynamic>{'role': 'user', 'content': prompt},
-    ];
-    final response = await _dio.post<Map<String, dynamic>>(
-      ApiEndpoints.chat,
-      data: <String, dynamic>{
-        'model': model ?? 'default',
-        'messages': messages,
-        'temperature': 0.7,
-      },
-    );
-    final data = response.data;
-    if (data == null) throw const FormatException('Reponse de chat vide.');
-    final choices = data['choices'] as List<dynamic>?;
-    final choice = choices?.isNotEmpty == true
-        ? choices!.first as Map<String, dynamic>
-        : null;
-    final message = choice?['message'] as Map<String, dynamic>?;
-    final content = message?['content'] as String? ?? data['content'] as String?;
-    if (content == null) throw const FormatException('Contenu assistant absent de la reponse.');
+    final client = await _apiClient.rodiumClient;
+    final response = await client
+        .model(model ?? 'default')
+        .temperature(0.7)
+        .chat(_messages(prompt: prompt, history: history));
+    final dynamic result = response;
+    final String? content = result.text as String? ?? result.content as String?;
+    if (content == null) {
+      throw const FormatException('Contenu assistant absent de la reponse.');
+    }
     return MessageModel(
-      id: data['id'] as String? ?? DateTime.now().microsecondsSinceEpoch.toString(),
+      id: DateTime.now().microsecondsSinceEpoch.toString(),
       content: content,
       role: MessageRole.assistant,
       timestamp: DateTime.now(),
     );
   }
 
+  /// Streams text deltas from RodiumAI; Dio is intentionally reserved for media.
+  Stream<String> streamMessage({
+    required String prompt,
+    required List<MessageModel> history,
+    String? model,
+  }) async* {
+    final client = await _apiClient.rodiumClient;
+    final Stream<dynamic> deltas = client
+        .model(model ?? 'default')
+        .stream(_messages(prompt: prompt, history: history));
+    await for (final delta in deltas) {
+      final dynamic value = delta;
+      final String? text = value.text as String? ?? value.content as String?;
+      if (text != null && text.isNotEmpty) yield text;
+    }
+  }
+
   Future<String> generateImage({
     required String prompt,
     String model = 'rodium-image-v1',
   }) async {
-    final response = await _dio.post<Map<String, dynamic>>(
+    final response = await _apiClient.dio.post<Map<String, dynamic>>(
       ApiEndpoints.image,
       data: <String, dynamic>{'prompt': prompt, 'model': model, 'n': 1, 'size': '1024x1024'},
     );
@@ -67,7 +81,7 @@ class ChatRemoteDataSource {
     required String prompt,
     String model = 'rodium-video-v1',
   }) async {
-    final response = await _dio.post<Map<String, dynamic>>(
+    final response = await _apiClient.dio.post<Map<String, dynamic>>(
       ApiEndpoints.video,
       data: <String, dynamic>{'prompt': prompt, 'model': model},
     );
@@ -79,5 +93,5 @@ class ChatRemoteDataSource {
 }
 
 final chatRemoteDataSourceProvider = Provider<ChatRemoteDataSource>((ref) {
-  return ChatRemoteDataSource(ref.watch(apiClientProvider).dio);
+  return ChatRemoteDataSource(ref.watch(apiClientProvider));
 });
