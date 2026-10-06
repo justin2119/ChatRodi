@@ -28,7 +28,7 @@ class SettingsScreen extends ConsumerWidget {
     final temperature = ref.watch(temperatureProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Param\\u00e8tres')),
+      appBar: AppBar(title: const Text('Paramètres')),
       body: ListView(
         padding: const EdgeInsets.all(18),
         children: [
@@ -40,8 +40,8 @@ class SettingsScreen extends ConsumerWidget {
                 final user = snapshot.data?.session?.user ?? Supabase.instance.client.auth.currentUser;
                 return ListTile(
                   leading: Icon(user == null ? Icons.person_outline : Icons.verified_user_outlined, color: const Color(0xFFFF6600)),
-                  title: Text(user?.email ?? 'Non connect\\u00e9'),
-                  subtitle: Text(user == null ? 'Acc\\u00e8s invit\\u00e9' : 'Compte connect\\u00e9'),
+                  title: Text(user?.email ?? 'Non connecté'),
+                  subtitle: Text(user == null ? 'Accès invité' : 'Compte connecté'),
                   trailing: ElevatedButton(
                     onPressed: () async {
                       if (user == null) {
@@ -55,16 +55,16 @@ class SettingsScreen extends ConsumerWidget {
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
                     ),
-                    child: Text(user == null ? 'Se connecter' : 'Se d\\u00e9connecter'),
+                    child: Text(user == null ? 'Se connecter' : 'Se déconnecter'),
                   ),
                 );
               },
             ),
           ]),
-          _Section(title: 'G\\u00e9n\\u00e9ral', children: [
+          _Section(title: 'Général', children: [
             ListTile(
               leading: const Icon(Icons.palette_outlined),
-              title: const Text('Th\\u00e8me'),
+              title: const Text('Thème'),
               subtitle: Text(_themeLabel(themeMode)),
               trailing: DropdownButton<ThemeMode>(
                 value: themeMode,
@@ -72,7 +72,7 @@ class SettingsScreen extends ConsumerWidget {
                 items: const [
                   DropdownMenuItem(value: ThemeMode.dark, child: Text('Sombre')),
                   DropdownMenuItem(value: ThemeMode.light, child: Text('Clair')),
-                  DropdownMenuItem(value: ThemeMode.system, child: Text('Syst\\u00e8me')),
+                  DropdownMenuItem(value: ThemeMode.system, child: Text('Système')),
                 ],
                 onChanged: (value) {
                   if (value != null) ref.read(themeModeProvider.notifier).setThemeMode(value);
@@ -80,17 +80,17 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
           ]),
-          _Section(title: 'Mod\\u00e8le & IA', children: [
+          _Section(title: 'Modèle & IA', children: [
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: modelsAsync.when(
                 loading: () => InputDecorator(
-                  decoration: const InputDecoration(labelText: 'Mod\\u00e8le par d\\u00e9faut'),
+                  decoration: const InputDecoration(labelText: 'Modèle par défaut'),
                   child: Text(selectedModel),
                 ),
                 error: (_, __) => DropdownButtonFormField<String>(
                   value: _fallbackModel,
-                  decoration: const InputDecoration(labelText: 'Mod\\u00e8le par d\\u00e9faut'),
+                  decoration: const InputDecoration(labelText: 'Modèle par défaut'),
                   items: const [DropdownMenuItem(value: _fallbackModel, child: Text(_fallbackModel))],
                   onChanged: (value) {
                     if (value != null) ref.read(defaultModelProvider.notifier).state = value;
@@ -106,7 +106,7 @@ class SettingsScreen extends ConsumerWidget {
                   }
                   return DropdownButtonFormField<String>(
                     value: value,
-                    decoration: const InputDecoration(labelText: 'Mod\\u00e8le par d\\u00e9faut'),
+                    decoration: const InputDecoration(labelText: 'Modèle par défaut'),
                     items: options.map((model) => DropdownMenuItem(value: model, child: Text(model))).toList(),
                     onChanged: (model) {
                       if (model != null) ref.read(defaultModelProvider.notifier).state = model;
@@ -117,7 +117,7 @@ class SettingsScreen extends ConsumerWidget {
             ),
             ListTile(
               leading: const Icon(Icons.tune),
-              title: const Text('Temp\\u00e9rature'),
+              title: const Text('Température'),
               subtitle: Text(temperature.toStringAsFixed(1)),
             ),
             Padding(
@@ -132,16 +132,16 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
           ]),
-          _Section(title: 'S\\u00e9curit\\u00e9 & Cl\\u00e9 API', children: [
+          _Section(title: 'Sécurité & Clé API', children: [
             ListTile(
               leading: const Icon(Icons.key_outlined),
-              title: const Text('Cl\\u00e9 API (BYOK)'),
-              subtitle: const Text('Consulter le statut ou modifier la cl\\u00e9 enregistr\\u00e9e'),
+              title: const Text('Clé API (BYOK)'),
+              subtitle: const Text('Consulter le statut ou modifier la clé enregistrée'),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => context.go('/'),
             ),
           ]),
-          _Section(title: '\\u00c0 propos & Version', children: const [
+          _Section(title: 'À propos & Version', children: const [
             ListTile(
               leading: Icon(Icons.info_outline),
               title: Text('ChatRodi'),
@@ -156,7 +156,7 @@ class SettingsScreen extends ConsumerWidget {
   static String _themeLabel(ThemeMode mode) => switch (mode) {
         ThemeMode.dark => 'Sombre',
         ThemeMode.light => 'Clair',
-        ThemeMode.system => 'Syst\\u00e8me',
+        ThemeMode.system => 'Système',
       };
 }
 
